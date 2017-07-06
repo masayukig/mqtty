@@ -35,7 +35,13 @@ from six.moves.urllib import parse as urlparse
 import sqlalchemy.exc
 import urwid
 
+from mqtty import db
+from mqtty import config
+from mqtty import keymap
+from mqtty import mywid
+from mqtty import sync
 import mqtty.view
+from mqtty.view import mouse_scroll_decorator
 import mqtty.version
 
 WELCOME_TEXT = """\
@@ -277,9 +283,9 @@ class App(object):
 
         self.fetch_missing_refs = fetch_missing_refs
         self.config.keymap.updateCommandMap()
-        self.search = search.SearchCompiler(self.config.username)
+        # self.search = search.SearchCompiler(self.config.username)
+        self.search = None
         self.db = db.Database(self, self.config.dburi, self.search)
-        self.initSystemData()
         self.sync = sync.Sync(self, disable_background_sync)
 
         self.status = StatusHeader(self)
@@ -292,7 +298,67 @@ class App(object):
             self.footer = urwid.AttrMap(self.breadcrumbs, 'footer')
         else:
             self.footer = None
-        screen = view_project_list.ProjectListView(self)
+
+        # FIXME
+        @mouse_scroll_decorator.ScrollByWheel
+        class DummyListView(urwid.WidgetWrap, mywid.Searchable):
+            title = "Dummy"
+            def getCommands(self):
+                return [
+                    (keymap.TOGGLE_LIST_SUBSCRIBED,
+                     "Toggle whether only subscribed projects or all projects are listed"),
+                    (keymap.TOGGLE_LIST_REVIEWED,
+                     "Toggle listing of projects with unreviewed changes"),
+                    (keymap.TOGGLE_SUBSCRIBED,
+                     "Toggle the subscription flag for the selected project"),
+                    (keymap.REFRESH,
+                     "Sync subscribed projects"),
+                    (keymap.TOGGLE_MARK,
+                     "Toggle the process mark for the selected project"),
+                    (keymap.NEW_PROJECT_TOPIC,
+                     "Create project topic"),
+                    (keymap.DELETE_PROJECT_TOPIC,
+                     "Delete selected project topic"),
+                    (keymap.MOVE_PROJECT_TOPIC,
+                     "Move selected project to topic"),
+                    (keymap.COPY_PROJECT_TOPIC,
+                     "Copy selected project to topic"),
+                    (keymap.REMOVE_PROJECT_TOPIC,
+                     "Remove selected project from topic"),
+                    (keymap.RENAME_PROJECT_TOPIC,
+                     "Rename selected project topic"),
+                    (keymap.INTERACTIVE_SEARCH,
+                     "Interactive search"),
+                ]
+
+            def help(self):
+                key = self.app.config.keymap.formatKeys
+                commands = self.getCommands()
+                return [(c[0], key(c[0]), c[1]) for c in commands]
+
+            def __init__(self, app):
+                super(DummyListView, self).__init__(urwid.Pile([]))
+                self.log = logging.getLogger('mqtty.view.dummy_list')
+                self.searchInit()
+                self.app = app
+                self.unreviewed = True
+                self.subscribed = True
+                self.project_rows = {}
+                self.topic_rows = {}
+                self.open_topics = set()
+                self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
+
+            def selectable(self):
+                return True
+
+            def sizing(self):
+                return frozenset([urwid.FIXED])
+
+            def refresh(self):
+                pass
+
+        # FIXME
+        screen = DummyListView(self)
         self.status.update(title=screen.title)
         self.updateStatusQueries()
         self.frame = urwid.Frame(body=screen, footer=self.footer)
@@ -311,9 +377,9 @@ class App(object):
         warnings.showwarning = self._showWarning
 
         has_subscribed_projects = False
-        with self.db.getSession() as session:
-            if session.getProjects(subscribed=True):
-                has_subscribed_projects = True
+        # with self.db.getSession() as session:
+        #     if session.getProjects(subscribed=True):
+        #         has_subscribed_projects = True
         if not has_subscribed_projects:
             self.welcome()
 
@@ -627,28 +693,6 @@ class App(object):
         else:
             self.log.error("Unable to parse command %s with data %s" % (command, data))
 
-    #storyboard
-    def toggleHeldChange(self, change_key):
-        with self.db.getSession() as session:
-            change = session.getChange(change_key)
-            change.held = not change.held
-            ret = change.held
-            if not change.held:
-                for r in change.revisions:
-                    for m in change.messages:
-                        if m.pending:
-                            self.sync.submitTask(
-                                sync.UploadReviewTask(m.key, sync.HIGH_PRIORITY))
-        self.updateStatusQueries()
-        return ret
-
-    def initSystemData(self):
-        with self.db.getSession() as session:
-            system = session.getSystem()
-            if system is None:
-                self.user_id = None
-            else:
-                self.user_id = system.user_id
 
 def version():
     return "Mqtty version: %s" % mqtty.version.version_info.release_string()
