@@ -49,6 +49,7 @@ class Database(object):
                                             autoflush=False)
         self.session = scoped_session(self.session_factory)
         self.lock = threading.Lock()
+        self.topics = {}
 
     def getSession(self):
         return DatabaseSession(self)
@@ -70,6 +71,10 @@ class Database(object):
             self.log.debug('Stamping database as initial revision')
             alembic.command.stamp(config, "44402069e137")
         alembic.command.upgrade(config, 'head')
+
+    def append(self, msg):
+        self.topics.update({msg.topic: str(msg.payload)})
+
 
 class DatabaseSession(object):
     def __init__(self, database):

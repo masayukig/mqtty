@@ -36,6 +36,8 @@ import six
 from six.moves import queue
 from six.moves.urllib import parse as urlparse
 
+import paho.mqtt.client as mqtt
+
 import mqtty.version
 
 HIGH_PRIORITY=0
@@ -128,11 +130,32 @@ class Sync(object):
         self.queue = MultiQueue([HIGH_PRIORITY, NORMAL_PRIORITY, LOW_PRIORITY])
         self.result_queue = queue.Queue()
         self.session = requests.Session()
+        # Create a websockets client
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+
+        # Connect to the firehose
+        FIREHOSE_HOST = 'firehose.openstack.org'
+        self.log.debug("Connecting to " + FIREHOSE_HOST)
+        self.client.connect(FIREHOSE_HOST)
+        self.log.debug("Connected to " + FIREHOSE_HOST)
+
+    def on_connect(self, client, userdata, flags, rc):
+        self.log.debug("Connected with result code " + str(rc))
+        self.client.subscribe('#')
+
+    def on_message(self, client, userdata, msg):
+        # FIXME: just for draft implementation
+        self.app.db.append(msg)
+        self.log.debug(msg.topic+" "+str(msg.payload))
+        self.app.refresh()
 
     def run(self, pipe):
         task = None
-        while True:
-            task = self._run(pipe, task)
+        self.client.loop_forever()
+        # while True:
+        #     task = self._run(pipe, task)
 
     def _run(self, pipe, task=None):
         if not task:

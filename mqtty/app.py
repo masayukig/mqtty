@@ -42,6 +42,8 @@ from mqtty import mywid
 from mqtty import sync
 import mqtty.view
 from mqtty.view import mouse_scroll_decorator
+#from mqtty.view import message_list as view_message_list
+from mqtty.view import topic_list as view_topic_list
 import mqtty.version
 
 WELCOME_TEXT = """\
@@ -357,8 +359,11 @@ class App(object):
             def refresh(self):
                 pass
 
+
         # FIXME
-        screen = DummyListView(self)
+        #screen = DummyListView(self)
+        #screen = view_message_list.MessageListView(self)
+        screen = view_topic_list.TopicListView(self)
         self.status.update(title=screen.title)
         self.updateStatusQueries()
         self.frame = urwid.Frame(body=screen, footer=self.footer)
