@@ -30,6 +30,97 @@ from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import and_
 
 metadata = MetaData()
+topic_table = Table(
+    'topic', metadata,
+    Column('key', Integer, primary_key=True),
+    Column('name', String(255), index=True, unique=True, nullable=False),
+    Column('subscribed', Boolean, index=True, default=False),
+    Column('description', Text, nullable=False, default=''),
+    Column('updated', DateTime, index=True),
+)
+message_table = Table(
+    'message', metadata,
+    Column('message_key', Integer, ForeignKey("message.key"), index=True),
+    Column('message', Text, nullable=False),
+)
+topic_message_table = Table(
+    'topic_message', metadata,
+    Column('key', Integer, primary_key=True),
+    Column('topic_key', Integer, ForeignKey("topic.key"), index=True),
+    Column('message_key', Integer, ForeignKey("message.key"), index=True),
+    Column('sequence', Integer, nullable=False),
+    UniqueConstraint('message_key', 'sequence', name='message_key_sequence_const'),
+    )
+
+
+class Topic(object):
+    def __init__(self, name, sequence):
+        self.name = name
+        self.sequence = sequence
+
+    def addMessage(self, message):
+        session = Session.object_session(self)
+        seq = max([x.sequence for x in self.topic_messages] + [0])
+        tm = TopicMessage(topic, self, seq+1)
+        self.topic_messages.append(pt)
+        self.messages.append(message)
+        session.add(tm)
+        session.flush()
+
+    def removeMessage(self, message):
+        session = Session.object_session(self)
+        for tm in self.topic_messages:
+            if tm.topic_key == topic.key:
+                self.topic_messages.remove(tm)
+                session.delete(tm)
+        self.messages.remove(message)
+        session.flush()
+
+class TopicMessage(object):
+    def __init__(self, project, topic, sequence):
+        self.project_key = project.key
+        self.topic_key = topic.key
+        self.sequence = sequence
+
+
+class Message(object):
+    def __init__(self, message):
+        self.message = message
+
+    def addTopic(self, topic):
+        session = Session.object_session(self)
+        seq = max([x.sequence for x in self.topic_messages] + [0])
+        tm = TopicMessage(topic, self, seq+1)
+        self.topic_messages.append(tm)
+        self.topics.append(project)
+        session.add(tm)
+        session.flush()
+
+    def removeTopic(self, topic):
+        session = Session.object_session(self)
+        for tm in self.topic_messages:
+            if tm.topic_key == topic.key:
+                self.topic_messages.remove(tm)
+                session.delete(tm)
+        self.topics.remove(topic)
+        session.flush()
+
+
+mapper(Topic, topic_table, properties=dict(
+    messages=relationship(Message,
+                          order_by=topic_table.c.name,
+                          viewonly=True),
+))
+mapper(Message, message_table, properties=dict(
+    topics=relationship(Topic,
+                        secondary=topic_message_table,
+                        order_by=message_table.c.message,
+                        viewonly=True),
+    topic_messages=relationship(TopicMessage),
+))
+mapper(TopicMessage, topic_message_table)
+
+
 
 class Database(object):
     def __init__(self, app, dburi, search):
