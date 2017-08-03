@@ -40,7 +40,8 @@ topic_table = Table(
 )
 message_table = Table(
     'message', metadata,
-    Column('message_key', Integer, ForeignKey("message.key"), index=True),
+    Column('key', Integer, primary_key=True),
+    Column('topic_key', Integer, ForeignKey("topic.key"), index=True),
     Column('message', Text, nullable=False),
 )
 topic_message_table = Table(
@@ -54,9 +55,8 @@ topic_message_table = Table(
 
 
 class Topic(object):
-    def __init__(self, name, sequence):
+    def __init__(self, name):
         self.name = name
-        self.sequence = sequence
 
     def addMessage(self, message):
         session = Session.object_session(self)
@@ -84,8 +84,9 @@ class TopicMessage(object):
 
 
 class Message(object):
-    def __init__(self, message):
+    def __init__(self, message, topic):
         self.message = message
+        self.topic_key = topic.key
 
     def addTopic(self, topic):
         session = Session.object_session(self)
@@ -114,7 +115,7 @@ mapper(Topic, topic_table, properties=dict(
 mapper(Message, message_table, properties=dict(
     topics=relationship(Topic,
                         secondary=topic_message_table,
-                        order_by=message_table.c.message,
+                        order_by=topic_table.c.name,
                         viewonly=True),
     topic_messages=relationship(TopicMessage),
 ))
@@ -160,7 +161,7 @@ class Database(object):
 
         if current_rev is None and has_table:
             self.log.debug('Stamping database as initial revision')
-            alembic.command.stamp(config, "44402069e137")
+            alembic.command.stamp(config, "66918e5b789b")
         alembic.command.upgrade(config, 'head')
 
     def append(self, msg):
@@ -200,3 +201,41 @@ class DatabaseSession(object):
 
     def vacuum(self):
         self.session().execute("VACUUM")
+
+    def getTopics(self, subscribed=False):
+        query = self.session().query(Topic)
+        if subscribed:
+            query = query.filter_by(subscribed=subscribed)
+        return query.order_by(Topic.name).all()
+
+    def getTopic(self, key):
+        try:
+            return self.session().query(Topic).filter_by(key=key).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
+    def getTopicByName(self, name):
+        try:
+            return self.session().query(Topic).filter_by(name=name).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
+    def getMessages(self):
+        return self.session().query(Message).order_by(Message.key).all()
+
+    def getMessagesByTopic(self, topic):
+        query = self.session().query(Message)
+        query = query.filter_by(topic_key=topic.key)
+        return query.order_by(Message.key).all()
+
+    def createTopic(self, *args, **kw):
+        o = Topic(*args, **kw)
+        self.session().add(o)
+        self.session().flush()
+        return o
+
+    def createMessage(self, *args, **kw):
+        o = Message(*args, **kw)
+        self.session().add(o)
+        self.session().flush()
+        return o

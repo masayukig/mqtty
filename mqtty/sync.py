@@ -143,12 +143,19 @@ class Sync(object):
 
     def on_connect(self, client, userdata, flags, rc):
         self.log.debug("Connected with result code " + str(rc))
+        # FIXME: just for draft implementation
         self.client.subscribe('#')
 
     def on_message(self, client, userdata, msg):
         # FIXME: just for draft implementation
-        self.app.db.append(msg)
-        self.log.debug(msg.topic+" "+str(msg.payload))
+        self.log.debug("on_message called =================")
+        with self.app.db.getSession() as session:
+            topic = session.getTopicByName(msg.topic)
+            if not topic:
+                topic = session.createTopic(msg.topic)
+            session.createMessage(str(msg.payload), topic)
+        # self.app.db.append(msg)
+        self.log.debug(msg.topic + ": " + str(msg.payload))
         self.app.refresh()
 
     def run(self, pipe):
