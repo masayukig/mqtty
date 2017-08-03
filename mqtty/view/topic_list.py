@@ -80,15 +80,34 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
         return frozenset([urwid.FIXED])
 
     def refresh(self):
-        self.log.debug('refresh called')
-        class Topic():
-            def __init__(self, key, name):
-                self.key = key
-                self.name = name
+        self.log.debug('refresh called ===============')
 
-        for key in self.app.db.topics:
-            self.log.debug(key)
-            self.listbox.body.append(TopicRow(Topic(key, key + "_name")))
+        len(self.listbox.body)
+        # for row in self.listbox.body:
+        #     self.listbox.body.remove(row)
+        i = 0
+        with self.app.db.getSession() as session:
+            for topic in session.getTopics():
+                num_msg = len(session.getMessagesByTopic(topic))
+                key = topic.key
+                row = self.topic_rows.get(key)
+                if not row:
+                    row = TopicRow(topic, num_msg)
+                    self.listbox.body.append(row)
+                    self.topic_rows[key] = row
+                else:
+                    row.update(topic, num_msg)
+                i = i + 1
+
+        self.title = "Topics: " + str(i)
+        self.app.status.update(title=self.title)
+
+
+#            if i > 0:
+#                self.listbox.body.pop()
+        # for key in self.app.db.topics:
+        #     self.log.debug(key)
+        #     self.listbox.body.append(TopicRow(Topic(key, key + "_name")))
 
     def handleCommands(self, commands):
         self.log.debug('handleCommands called')
@@ -108,14 +127,14 @@ class TopicRow(urwid.Button):
 
     def _setName(self, name):
         self.topic_name = name
-        name = '[[ '+name+' ]]'
+        name = name
         if self.mark:
             name = '%'+name
         else:
             name = ' '+name
         self.name.set_text(name)
 
-    def __init__(self, topic, callback=None):
+    def __init__(self, topic, num_msg, callback=None):
         super(TopicRow, self).__init__('', on_press=callback,
                                        user_data=(topic.key, topic.name))
         self.mark = False
@@ -135,23 +154,17 @@ class TopicRow(urwid.Button):
         self._w = urwid.AttrMap(self.row_style, None, focus_map=self.project_focus_map)
         self._style = 'subscribed-project'
         self.row_style.set_attr_map({None: self._style})
-        self.update(topic)
+        self.num_msg = num_msg
+        self.update(topic, num_msg)
 
-    def update(self, topic, unreviewed_changes=None, open_changes=None):
-        self._setName(topic.name)
-        if unreviewed_changes is None:
-            self.unreviewed_changes.set_text('')
-        else:
-            self.unreviewed_changes.set_text('%i ' % unreviewed_changes)
-        if open_changes is None:
-            self.open_changes.set_text('')
-        else:
-            self.open_changes.set_text('%i ' % open_changes)
+    def update(self, topic, num_msg):
+        self.num_msg = num_msg
+        self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
 
     def toggleMark(self):
         self.mark = not self.mark
         if self.mark:
-            style = 'marked-project'
+            style = 'marked-topic'
         else:
             style = self._style
         self.row_style.set_attr_map({None: style})
