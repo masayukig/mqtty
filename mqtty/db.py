@@ -203,11 +203,24 @@ class DatabaseSession(object):
     def vacuum(self):
         self.session().execute("VACUUM")
 
-    def getTopics(self, subscribed=False):
-        query = self.session().query(Topic)
+    def getTopics(self, subscribed=False, sort_by='name'):
+        q = self.session().query(Topic)
         if subscribed:
-            query = query.filter_by(subscribed=subscribed)
-        return query.order_by(Topic.name).all()
+            q = q.filter_by(subscribed=subscribed)
+        if not isinstance(sort_by, (list, tuple)):
+            sort_by = [sort_by]
+        for s in sort_by:
+            if s == 'key':
+                q = q.order_by(topic_table.c.key)
+            elif s == 'updated':
+                q = q.order_by(topic_table.c.updated)
+            elif s == 'name':
+                q = q.order_by(topic_table.c.name)
+        self.database.log.debug("Search SQL: %s" % q)
+        try:
+            return q.all()
+        except sqlalchemy.orm.exc.NoResultFound:
+            return []
 
     def getTopic(self, key):
         try:

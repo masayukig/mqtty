@@ -98,6 +98,7 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
         self.project_rows = {}
         self.topic_rows = {}
         self.open_topics = set()
+        self.sort_by = 'name'
         self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         self.refresh()
         self.header = TopicListHeader()
@@ -121,7 +122,10 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
         #     self.listbox.body.remove(row)
         i = 0
         with self.app.db.getSession() as session:
-            for topic in session.getTopics():
+            topic_list = session.getTopics(sort_by=self.sort_by)
+            if self.reverse:
+                topic_list.reverse()
+            for topic in topic_list:
                 num_msg = len(session.getMessagesByTopic(topic))
                 key = topic.key
                 row = self.topic_rows.get(key)
@@ -172,7 +176,7 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
         if keymap.SORT_BY_NUMBER in commands:
             if not len(self.listbox.body):
                 return True
-            self.sort_by = 'number'
+            self.sort_by = 'key'
             self.clearTopicList()
             self.refresh()
             return True
@@ -180,6 +184,13 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
             if not len(self.listbox.body):
                 return True
             self.sort_by = 'updated'
+            self.clearTopicList()
+            self.refresh()
+            return True
+        if keymap.SORT_BY_TOPIC in commands:
+            if not len(self.listbox.body):
+                return True
+            self.sort_by = 'name'
             self.clearTopicList()
             self.refresh()
             return True
