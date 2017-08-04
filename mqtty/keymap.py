@@ -64,6 +64,7 @@ EDIT_TOPIC = 'edit topic'
 EDIT_COMMIT_MESSAGE = 'edit commit message'
 SUBMIT_CHANGE = 'submit change'
 SORT_BY_NUMBER = 'sort by number'
+SORT_BY_TOPIC = 'sort by topic'
 SORT_BY_UPDATED = 'sort by updated'
 SORT_BY_LAST_SEEN = 'sort by last seen'
 SORT_BY_REVERSE = 'reverse the sort'
@@ -130,6 +131,7 @@ DEFAULT_KEYMAP = {
     EDIT_COMMIT_MESSAGE: 'ctrl d',
     SUBMIT_CHANGE: 'ctrl u',
     SORT_BY_NUMBER: [['S', 'n']],
+    SORT_BY_TOPIC: [['S', 't']],
     SORT_BY_UPDATED: [['S', 'u']],
     SORT_BY_LAST_SEEN: [['S', 's']],
     SORT_BY_REVERSE: [['S', 'r']],
