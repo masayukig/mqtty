@@ -22,6 +22,35 @@ from mqtty.view import message_list as view_message_list
 from mqtty.view import mouse_scroll_decorator
 
 
+class ColumnInfo(object):
+    def __init__(self, name, packing, value):
+        self.name = name
+        self.packing = packing
+        self.value = value
+        self.options = (packing, value)
+        if packing == 'given':
+            self.spacing = value + 1
+        else:
+            self.spacing = (value * 8) + 1
+
+
+COLUMNS = [
+    ColumnInfo('Number',  'given',   6),
+    ColumnInfo('Topic',   'weight',  1),
+    ColumnInfo('Updated', 'given',  10),
+    ColumnInfo('MSG',     'given',   4),
+]
+
+class TopicListHeader(urwid.WidgetWrap):
+    def __init__(self):
+        cols = [(5, urwid.Text(u' #')),
+                 urwid.Text(u'Topic'),
+                 (10, urwid.Text(u'Updated')),
+                 (5,  urwid.Text(u'MSG')),
+        ]
+        super(TopicListHeader, self).__init__(urwid.Columns(cols))
+
+
 @mouse_scroll_decorator.ScrollByWheel
 class TopicListView(urwid.WidgetWrap, mywid.Searchable):
     title = "Topics"
@@ -71,7 +100,12 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
         self.open_topics = set()
         self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         self.refresh()
+        self.header = TopicListHeader()
+        self._w.contents.append((app.header, ('pack', 1)))
+        self._w.contents.append((urwid.Divider(),('pack', 1)))
+        self._w.contents.append((urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
+        self._w.set_focus(3)
 
     def selectable(self):
         return True
@@ -166,8 +200,24 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
             self.app, topic))
 
 
-class TopicRow(urwid.Button):
-    project_focus_map = {None: 'focused',
+class TopicListColumns(object):
+    def updateColumns(self):
+        del self.columns.contents[:]
+        cols = self.columns.contents
+        options = self.columns.options
+
+        for colinfo in COLUMNS:
+            if colinfo.name in self.enabled_columns:
+                attr = colinfo.name.lower().replace(' ', '_')
+                cols.append((getattr(self, attr),
+                             options(*colinfo.options)))
+
+        for c in self.category_columns:
+            cols.append(c)
+
+
+class TopicRow(urwid.Button, TopicListColumns):
+    topic_focus_map = {None: 'focused',
 #                         'subscribed-project': 'focused-subscribed-project',
 #                         'marked-project': 'focused-marked-project',
     }
@@ -189,27 +239,33 @@ class TopicRow(urwid.Button):
                                        user_data=(topic))
         self.mark = False
         self._style = None
-        self.topic_key = topic.key
+        #self.topic_key = topic.key
         self.name = urwid.Text('')
+
         self._setName(topic.name)
+        # FIXME: showing 'topic_key' is just for debugging. This should be removed.
+        self.topic_key = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')
-        self.unreviewed_changes = urwid.Text(u'', align=urwid.RIGHT)
-        self.open_changes = urwid.Text(u'', align=urwid.RIGHT)
+        self.updated = urwid.Text(u'', align=urwid.RIGHT)
+        self.num_msg = urwid.Text(u'', align=urwid.RIGHT)
         col = urwid.Columns([
-                self.name,
-                ('fixed', 11, self.unreviewed_changes),
-                ('fixed', 5, self.open_changes),
-                ])
+            ('fixed', 5, self.topic_key),
+            self.name,
+            ('fixed', 10, self.updated),
+            ('fixed', 5, self.num_msg),
+        ])
         self.row_style = urwid.AttrMap(col, '')
-        self._w = urwid.AttrMap(self.row_style, None, focus_map=self.project_focus_map)
+        self._w = urwid.AttrMap(self.row_style, None, focus_map=self.topic_focus_map)
         self._style = None # 'subscribed-project'
         self.row_style.set_attr_map({None: self._style})
-        self.num_msg = num_msg
+        # self.num_msg = num_msg
         self.update(topic, num_msg)
 
     def update(self, topic, num_msg):
-        self.num_msg = num_msg
-        self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
+        # FIXME: showing 'topic_key' is just for debugging. This should be removed.
+        self.topic_key.set_text('%i ' % topic.key)
+        self.num_msg.set_text('%i ' % num_msg)
+        #self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
 
     def toggleMark(self):
         self.mark = not self.mark
