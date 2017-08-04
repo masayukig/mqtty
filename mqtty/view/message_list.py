@@ -21,6 +21,15 @@ from mqtty import mywid
 from mqtty.view import mouse_scroll_decorator
 
 
+class MessageListHeader(urwid.WidgetWrap):
+    def __init__(self):
+        cols = [(5, urwid.Text(u' #')),
+                 urwid.Text(u'Message'),
+                 (10, urwid.Text(u'Updated')),
+        ]
+        super(MessageListHeader, self).__init__(urwid.Columns(cols))
+
+
 @mouse_scroll_decorator.ScrollByWheel
 class MessageListView(urwid.WidgetWrap, mywid.Searchable):
     title = "Message"
@@ -54,6 +63,10 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         self.message_rows = {}
         self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         self.refresh()
+        self.header = MessageListHeader()
+        self._w.contents.append((app.header, ('pack', 1)))
+        self._w.contents.append((urwid.Divider(),('pack', 1)))
+        self._w.contents.append((urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
 
     def selectable(self):
@@ -83,6 +96,22 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         self.app.status.update(title=self.title)
 
 
+class MessageListColumns(object):
+    def updateColumns(self):
+        del self.columns.contents[:]
+        cols = self.columns.contents
+        options = self.columns.options
+
+        for colinfo in COLUMNS:
+            if colinfo.name in self.enabled_columns:
+                attr = colinfo.name.lower().replace(' ', '_')
+                cols.append((getattr(self, attr),
+                             options(*colinfo.options)))
+
+        for c in self.category_columns:
+            cols.append(c)
+
+
 class MessageRow(urwid.Button):
     message_focus_map = {None: 'focused',
                          # 'focused-message': 'focused-subscribed-project',
@@ -105,16 +134,15 @@ class MessageRow(urwid.Button):
                                          user_data=(message.key, message.message))
         self.mark = False
         self._style = None
-        self.message_key = message.key
+        self.message_key = urwid.Text(u'', align=urwid.RIGHT) # message.key
         self.name = urwid.Text('')
         self._setName(message.message)
+        self.updated = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')
-        self.unreviewed_changes = urwid.Text(u'', align=urwid.RIGHT)
-        self.open_changes = urwid.Text(u'', align=urwid.RIGHT)
         col = urwid.Columns([
+                ('fixed', 5, self.message_key),
                 self.name,
-                ('fixed', 11, self.unreviewed_changes),
-                ('fixed', 5, self.open_changes),
+                ('fixed', 10, self.updated),
                 ])
         self.row_style = urwid.AttrMap(col, '')
         self._w = urwid.AttrMap(self.row_style, None, focus_map=self.message_focus_map)
@@ -123,4 +151,6 @@ class MessageRow(urwid.Button):
         self.update(message)
 
     def update(self, message):
-        self._setName(str(message.key) + " " + message.message)
+        self.message_key.set_text('%i ' % message.key)
+        self.updated.set_text(str(message.updated))
+        # self._setName(str(message.key) + " " + message.message)

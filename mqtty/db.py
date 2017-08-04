@@ -43,6 +43,7 @@ message_table = Table(
     Column('key', Integer, primary_key=True),
     Column('topic_key', Integer, ForeignKey("topic.key"), index=True),
     Column('message', Text, nullable=False),
+    Column('updated', DateTime, index=True),
 )
 topic_message_table = Table(
     'topic_message', metadata,

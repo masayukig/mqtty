@@ -31,6 +31,7 @@ def upgrade():
                     sa.Column('key', sa.Integer(), nullable=False),
                     sa.Column('topic_key', sa.Integer(), sa.ForeignKey('topic.key'), index=True),
                     sa.Column('message', sa.Text(), nullable=False),
+                    sa.Column('updated', sa.DateTime),
                     sa.PrimaryKeyConstraint('key')
     )
     op.create_table('topic_message',
