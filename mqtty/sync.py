@@ -136,7 +136,8 @@ class Sync(object):
         self.client.on_message = self.on_message
 
         # Connect to the firehose
-        FIREHOSE_HOST = 'firehose.openstack.org'
+        #FIREHOSE_HOST = 'firehose.openstack.org'
+        FIREHOSE_HOST = self.app.config.server['host']
         self.log.debug("Connecting to " + FIREHOSE_HOST)
         self.client.connect(FIREHOSE_HOST)
         self.log.debug("Connected to " + FIREHOSE_HOST)
@@ -144,7 +145,8 @@ class Sync(object):
     def on_connect(self, client, userdata, flags, rc):
         self.log.debug("Connected with result code " + str(rc))
         # FIXME: just for draft implementation
-        self.client.subscribe('#')
+        #self.client.subscribe('#')
+        self.client.subscribe(self.app.config.subscribed_topic['topic'])
 
     def on_message(self, client, userdata, msg):
         # FIXME: just for draft implementation

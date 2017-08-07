@@ -490,6 +490,7 @@ class App(object):
             self.frame.body = widget
 
     def refresh(self, data=None, force=False):
+        self.log.debug("app.refresh called =============")
         widget = self.frame.body
         while isinstance(widget, urwid.Overlay):
             widget = widget.contents[0][0]
@@ -511,10 +512,7 @@ class App(object):
         self.status.refresh()
 
     def updateStatusQueries(self):
-        return # TODO: storyboard
-        with self.db.getSession() as session:
-            held = len(session.getHeld())
-            self.status.update(held=held)
+        return
 
     def popup(self, widget,
               relative_width=50, relative_height=25,
