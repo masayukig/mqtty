@@ -18,6 +18,7 @@ import urwid
 
 from mqtty import keymap
 from mqtty import mywid
+from mqtty.view import message as view_message
 from mqtty.view import mouse_scroll_decorator
 
 
@@ -85,7 +86,7 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
                 key = message.key
                 row = self.message_rows.get(key)
                 if not row:
-                    row = MessageRow(message)
+                    row = MessageRow(message, self.onSelect)
                     self.listbox.body.append(row)
                     self.message_rows[key] = row
                 else:
@@ -94,6 +95,11 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
 
         self.title = "Messages: " + str(i)
         self.app.status.update(title=self.title)
+
+    def onSelect(self, button, data):
+        message = data
+        self.app.changeScreen(view_message.MessageView(
+            self.app, message))
 
 
 class MessageListColumns(object):
@@ -131,7 +137,7 @@ class MessageRow(urwid.Button):
 
     def __init__(self, message, callback=None):
         super(MessageRow, self).__init__('', on_press=callback,
-                                         user_data=(message.key, message.message))
+                                         user_data=(message))
         self.mark = False
         self._style = None
         self.message_key = urwid.Text(u'', align=urwid.RIGHT) # message.key

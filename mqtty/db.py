@@ -237,6 +237,12 @@ class DatabaseSession(object):
     def getMessages(self):
         return self.session().query(Message).order_by(Message.key).all()
 
+    def getMessage(self, key):
+        try:
+            return self.session().query(Message).filter_by(key=key).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
+
     def getMessagesByTopic(self, topic):
         query = self.session().query(Message)
         query = query.filter_by(topic_key=topic.key)
