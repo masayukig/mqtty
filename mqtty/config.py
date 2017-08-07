@@ -38,20 +38,14 @@ DEFAULT_CONFIG_PATH='~/.mqtty.yaml'
 
 class ConfigSchema(object):
     server = {v.Required('name'): str,
-              v.Required('url'): str,
-              v.Required('username'): str,
-              'password': str,
-              'verify-ssl': bool,
-              'ssl-ca-path': str,
-              'dburi': str,
-              v.Required('git-root'): str,
-              'git-url': str,
-              'log-file': str,
-              'socket': str,
-              'auth-type': v.Any('basic', 'digest', 'form'),
+              v.Required('host'): str,
               }
-
     servers = [server]
+
+    topic = {'name': str,
+              'topic': str,
+              }
+    subscribed_topics = [topic]
 
     _sort_by = v.Any('number', 'updated', 'last-seen', 'project')
     sort_by = v.Any(_sort_by, [_sort_by])
@@ -110,6 +104,7 @@ class ConfigSchema(object):
 
     def getSchema(self, data):
         schema = v.Schema({v.Required('servers'): self.servers,
+                           'subscribed-topics': self.subscribed_topics,
                            'palettes': self.palettes,
                            'palette': str,
                            'keymaps': self.keymaps,
@@ -143,43 +138,9 @@ class Config(object):
         schema(self.config)
         server = self.getServer(server)
         self.server = server
-        url = server['url']
-        if not url.endswith('/'):
-            url += '/'
-        self.url = url
-        result = urlparse.urlparse(url)
-        self.hostname = result.netloc
-        self.username = server['username']
-        self.password = server.get('password')
-        if self.password is None:
-            self.password = getpass.getpass("Password for %s (%s): "
-                                            % (self.url, self.username))
-        else:
-            # Ensure file is only readable by user as password is stored in
-            # file.
-            mode = os.stat(self.path).st_mode & 0o0777
-            if not mode == 0o600:
-                print (
-                    "Error: Config file '{}' contains a password and does "
-                    "not have permissions set to 0600.\n"
-                    "Permissions are: {}".format(self.path, oct(mode)))
-                exit(1)
-        self.auth_type = server.get('auth-type', 'digest')
-        self.verify_ssl = server.get('verify-ssl', True)
-        if not self.verify_ssl:
-            os.environ['GIT_SSL_NO_VERIFY']='true'
-        self.ssl_ca_path = server.get('ssl-ca-path', None)
-        if self.ssl_ca_path is not None:
-            self.ssl_ca_path = os.path.expanduser(self.ssl_ca_path)
-            # Mqtty itself uses the Requests library
-            os.environ['REQUESTS_CA_BUNDLE'] = self.ssl_ca_path
-            # And this is to allow Git callouts
-            os.environ['GIT_SSL_CAINFO'] = self.ssl_ca_path
-        self.git_root = os.path.expanduser(server['git-root'])
-        git_url = server.get('git-url', self.url + 'p/')
-        if not git_url.endswith('/'):
-            git_url += '/'
-        self.git_url = git_url
+
+        self.subscribed_topic = self.get_topic('default')
+
         self.dburi = server.get('dburi',
                                 'sqlite:///' + os.path.expanduser('~/.mqtty.db'))
         socket_path = server.get('socket', '~/.mqtty.sock')
@@ -251,6 +212,12 @@ class Config(object):
         for server in self.config['servers']:
             if name is None or name == server['name']:
                 return server
+        return None
+
+    def get_topic(self, name=None):
+        for topic in self.config['subscribed-topics']:
+            if name is None or name == topic['name']:
+                return topic
         return None
 
     def printSample(self):
