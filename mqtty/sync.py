@@ -153,7 +153,7 @@ class Sync(object):
             topic = session.getTopicByName(msg.topic)
             if not topic:
                 topic = session.createTopic(msg.topic)
-            session.createMessage(str(msg.payload), topic)
+            session.createMessage(str(msg.payload.decode('utf-8')), topic)
         # self.app.db.append(msg)
         self.log.debug(msg.topic + ": " + str(msg.payload))
         self.app.refresh()

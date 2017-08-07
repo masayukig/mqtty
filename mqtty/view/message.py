@@ -13,7 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import logging
+import pprint
 import urwid
 
 from mqtty import keymap
@@ -79,8 +81,10 @@ class MessageView(urwid.WidgetWrap, mywid.Searchable):
 
     def refresh(self):
         self.log.debug('message refresh called ===============')
+        self.log.debug('message: ' + self.message.message)
+        message = pprint.pformat(json.loads(self.message.message), width=80)
 
-        self.messagebox.set_text(self.message.message)
+        self.messagebox.set_text(message)
 
         self.title = "Message: " + str(self.message.key)
         self.app.status.update(title=self.title)
