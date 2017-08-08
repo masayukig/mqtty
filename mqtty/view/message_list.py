@@ -26,7 +26,7 @@ class MessageListHeader(urwid.WidgetWrap):
     def __init__(self):
         cols = [(6, urwid.Text(u' No.')),
                  urwid.Text(u'Message'),
-                 (10, urwid.Text(u'Updated')),
+                 (20, urwid.Text(u'Updated')),
         ]
         super(MessageListHeader, self).__init__(urwid.Columns(cols))
 
@@ -148,7 +148,7 @@ class MessageRow(urwid.Button):
         col = urwid.Columns([
                 ('fixed', 6, self.message_key),
                 self.name,
-                ('fixed', 10, self.updated),
+                ('fixed', 20, self.updated),
                 ])
         self.row_style = urwid.AttrMap(col, '')
         self._w = urwid.AttrMap(self.row_style, None, focus_map=self.message_focus_map)
@@ -158,5 +158,6 @@ class MessageRow(urwid.Button):
 
     def update(self, message):
         self.message_key.set_text('%i ' % message.key)
+        self.updated.set_text(str(message.updated))
         self.updated.set_text(str(message.updated))
         # self._setName(str(message.key) + " " + message.message)

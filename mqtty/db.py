@@ -22,7 +22,7 @@ import alembic
 import alembic.config
 import six
 import sqlalchemy
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, Text, UniqueConstraint
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, Text, UniqueConstraint, func
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import mapper, sessionmaker, relationship, scoped_session, joinedload
 from sqlalchemy.orm.session import Session
@@ -36,14 +36,14 @@ topic_table = Table(
     Column('name', String(255), index=True, unique=True, nullable=False),
     Column('subscribed', Boolean, index=True, default=False),
     Column('description', Text, nullable=False, default=''),
-    Column('updated', DateTime, index=True),
+    Column('updated', DateTime, index=True, default=func.now(), onupdate=func.now()),
 )
 message_table = Table(
     'message', metadata,
     Column('key', Integer, primary_key=True),
     Column('topic_key', Integer, ForeignKey("topic.key"), index=True),
     Column('message', Text, nullable=False),
-    Column('updated', DateTime, index=True),
+    Column('updated', DateTime, index=True, default=func.now(), onupdate=func.now()),
 )
 topic_message_table = Table(
     'topic_message', metadata,
