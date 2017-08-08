@@ -35,18 +35,18 @@ class ColumnInfo(object):
 
 
 COLUMNS = [
-    ColumnInfo('Number',  'given',   6),
+    ColumnInfo('No.',  'given',   5),
     ColumnInfo('Topic',   'weight',  1),
-    ColumnInfo('Updated', 'given',  10),
-    ColumnInfo('MSG',     'given',   4),
+    ColumnInfo('Updated', 'given',  20),
+    ColumnInfo('# of MSG', 'given',   9),
 ]
 
 class TopicListHeader(urwid.WidgetWrap):
     def __init__(self):
-        cols = [(5, urwid.Text(u' #')),
-                 urwid.Text(u'Topic'),
-                 (10, urwid.Text(u'Updated')),
-                 (5,  urwid.Text(u'MSG')),
+        cols = [(5, urwid.Text(u' No.')),
+                 urwid.Text(u' Topic'),
+                 (20, urwid.Text(u'Updated')),
+                 (9,  urwid.Text(u'# of MSG')),
         ]
         super(TopicListHeader, self).__init__(urwid.Columns(cols))
 
@@ -262,8 +262,8 @@ class TopicRow(urwid.Button, TopicListColumns):
         col = urwid.Columns([
             ('fixed', 5, self.topic_key),
             self.name,
-            ('fixed', 10, self.updated),
-            ('fixed', 5, self.num_msg),
+            ('fixed', 20, self.updated),
+            ('fixed', 9, self.num_msg),
         ])
         self.row_style = urwid.AttrMap(col, '')
         self._w = urwid.AttrMap(self.row_style, None, focus_map=self.topic_focus_map)
@@ -275,6 +275,7 @@ class TopicRow(urwid.Button, TopicListColumns):
     def update(self, topic, num_msg):
         # FIXME: showing 'topic_key' is just for debugging. This should be removed.
         self.topic_key.set_text('%i ' % topic.key)
+        self.updated.set_text(str(topic.updated))
         self.num_msg.set_text('%i ' % num_msg)
         #self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
 

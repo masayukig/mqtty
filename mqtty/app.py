@@ -301,68 +301,6 @@ class App(object):
         else:
             self.footer = None
 
-        # FIXME
-        @mouse_scroll_decorator.ScrollByWheel
-        class DummyListView(urwid.WidgetWrap, mywid.Searchable):
-            title = "Dummy"
-            def getCommands(self):
-                return [
-                    (keymap.TOGGLE_LIST_SUBSCRIBED,
-                     "Toggle whether only subscribed projects or all projects are listed"),
-                    (keymap.TOGGLE_LIST_REVIEWED,
-                     "Toggle listing of projects with unreviewed changes"),
-                    (keymap.TOGGLE_SUBSCRIBED,
-                     "Toggle the subscription flag for the selected project"),
-                    (keymap.REFRESH,
-                     "Sync subscribed projects"),
-                    (keymap.TOGGLE_MARK,
-                     "Toggle the process mark for the selected project"),
-                    (keymap.NEW_PROJECT_TOPIC,
-                     "Create project topic"),
-                    (keymap.DELETE_PROJECT_TOPIC,
-                     "Delete selected project topic"),
-                    (keymap.MOVE_PROJECT_TOPIC,
-                     "Move selected project to topic"),
-                    (keymap.COPY_PROJECT_TOPIC,
-                     "Copy selected project to topic"),
-                    (keymap.REMOVE_PROJECT_TOPIC,
-                     "Remove selected project from topic"),
-                    (keymap.RENAME_PROJECT_TOPIC,
-                     "Rename selected project topic"),
-                    (keymap.INTERACTIVE_SEARCH,
-                     "Interactive search"),
-                ]
-
-            def help(self):
-                key = self.app.config.keymap.formatKeys
-                commands = self.getCommands()
-                return [(c[0], key(c[0]), c[1]) for c in commands]
-
-            def __init__(self, app):
-                super(DummyListView, self).__init__(urwid.Pile([]))
-                self.log = logging.getLogger('mqtty.view.dummy_list')
-                self.searchInit()
-                self.app = app
-                self.unreviewed = True
-                self.subscribed = True
-                self.project_rows = {}
-                self.topic_rows = {}
-                self.open_topics = set()
-                self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
-
-            def selectable(self):
-                return True
-
-            def sizing(self):
-                return frozenset([urwid.FIXED])
-
-            def refresh(self):
-                pass
-
-
-        # FIXME
-        #screen = DummyListView(self)
-        #screen = view_message_list.MessageListView(self)
         screen = view_topic_list.TopicListView(self)
         self.status.update(title=screen.title)
         self.updateStatusQueries()
@@ -382,6 +320,7 @@ class App(object):
         warnings.showwarning = self._showWarning
 
         has_subscribed_projects = False
+        # FIXME: add a feature to subscribe topics
         # with self.db.getSession() as session:
         #     if session.getProjects(subscribed=True):
         #         has_subscribed_projects = True
