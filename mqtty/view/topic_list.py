@@ -35,18 +35,18 @@ class ColumnInfo(object):
 
 
 COLUMNS = [
-    ColumnInfo('Number',  'given',   6),
+    ColumnInfo('No.',  'given',   5),
     ColumnInfo('Topic',   'weight',  1),
     ColumnInfo('Updated', 'given',  10),
-    ColumnInfo('MSG',     'given',   4),
+    ColumnInfo('# of MSG', 'given',   9),
 ]
 
 class TopicListHeader(urwid.WidgetWrap):
     def __init__(self):
-        cols = [(5, urwid.Text(u' #')),
-                 urwid.Text(u'Topic'),
+        cols = [(5, urwid.Text(u' No.')),
+                 urwid.Text(u' Topic'),
                  (10, urwid.Text(u'Updated')),
-                 (5,  urwid.Text(u'MSG')),
+                 (9,  urwid.Text(u'# of MSG')),
         ]
         super(TopicListHeader, self).__init__(urwid.Columns(cols))
 

@@ -24,7 +24,7 @@ from mqtty.view import mouse_scroll_decorator
 
 class MessageListHeader(urwid.WidgetWrap):
     def __init__(self):
-        cols = [(5, urwid.Text(u' #')),
+        cols = [(6, urwid.Text(u' No.')),
                  urwid.Text(u'Message'),
                  (10, urwid.Text(u'Updated')),
         ]
@@ -146,7 +146,7 @@ class MessageRow(urwid.Button):
         self.updated = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')
         col = urwid.Columns([
-                ('fixed', 5, self.message_key),
+                ('fixed', 6, self.message_key),
                 self.name,
                 ('fixed', 10, self.updated),
                 ])
