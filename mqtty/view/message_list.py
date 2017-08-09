@@ -96,6 +96,60 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         self.title = "Messages: " + str(i)
         self.app.status.update(title=self.title)
 
+    def clearMessageList(self):
+        for key, value in self.message_rows.items():
+            self.listbox.body.remove(value)
+        self.message_rows = {}
+
+    def keypress(self, size, key):
+        if self.searchKeypress(size, key):
+            return None
+
+        if not self.app.input_buffer:
+            key = super(MessageListView, self).keypress(size, key)
+        keys = self.app.input_buffer + [key]
+        commands = self.app.config.keymap.getCommands(keys)
+        ret = self.handleCommands(commands)
+        if ret is True:
+            if keymap.FURTHER_INPUT not in commands:
+                self.app.clearInputBuffer()
+            return None
+        return key
+
+    def handleCommands(self, commands):
+        self.log.debug('handleCommands called')
+        if keymap.REFRESH in commands:
+            self.refresh()
+            self.app.status.update()
+            return True
+        if keymap.SORT_BY_NUMBER in commands:
+            if not len(self.listbox.body):
+                return True
+            self.sort_by = 'key'
+            self.clearMessageList()
+            self.refresh()
+            return True
+        if keymap.SORT_BY_UPDATED in commands:
+            if not len(self.listbox.body):
+                return True
+            self.sort_by = 'updated'
+            self.clearTopicList()
+            self.refresh()
+            return True
+        if keymap.SORT_BY_REVERSE in commands:
+            if not len(self.listbox.body):
+                return True
+            if self.reverse:
+                self.reverse = False
+            else:
+                self.reverse = True
+            self.clearTopicList()
+            self.refresh()
+            return True
+        if keymap.INTERACTIVE_SEARCH in commands:
+            self.searchStart()
+            return True
+
     def onSelect(self, button, data):
         message = data
         self.app.changeScreen(view_message.MessageView(
@@ -135,13 +189,16 @@ class MessageRow(urwid.Button):
             name = ' '+name
         self.name.set_text(name)
 
+    def search(self, search, attribute):
+        return self.name.search(search, attribute)
+
     def __init__(self, message, callback=None):
         super(MessageRow, self).__init__('', on_press=callback,
                                          user_data=(message))
         self.mark = False
         self._style = None
         self.message_key = urwid.Text(u'', align=urwid.RIGHT) # message.key
-        self.name = urwid.Text('')
+        self.name = mywid.SearchableText('')
         self._setName(message.message)
         self.updated = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')

@@ -194,7 +194,7 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
             self.clearTopicList()
             self.refresh()
             return True
-        if keymap.SORT_BY_REVERSE in commands:
+
             if not len(self.listbox.body):
                 return True
             if self.reverse:
@@ -203,6 +203,9 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
                 self.reverse = True
             self.clearTopicList()
             self.refresh()
+            return True
+        if keymap.INTERACTIVE_SEARCH in commands:
+            self.searchStart()
             return True
 
     def onSelect(self, button, data):
@@ -251,7 +254,7 @@ class TopicRow(urwid.Button, TopicListColumns):
         self.mark = False
         self._style = None
         #self.topic_key = topic.key
-        self.name = urwid.Text('')
+        self.name = mywid.SearchableText('')
 
         self._setName(topic.name)
         # FIXME: showing 'topic_key' is just for debugging. This should be removed.
@@ -271,6 +274,9 @@ class TopicRow(urwid.Button, TopicListColumns):
         self.row_style.set_attr_map({None: self._style})
         # self.num_msg = num_msg
         self.update(topic, num_msg)
+
+    def search(self, search, attribute):
+        return self.name.search(search, attribute)
 
     def update(self, topic, num_msg):
         # FIXME: showing 'topic_key' is just for debugging. This should be removed.

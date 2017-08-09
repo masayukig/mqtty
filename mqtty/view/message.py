@@ -25,11 +25,16 @@ from mqtty.view import mouse_scroll_decorator
 class MessageBox(mywid.HyperText):
     def __init__(self, app, message):
         self.app = app
+        self.log = logging.getLogger('mqtty.view.messagebox')
         super(MessageBox, self).__init__(message)
 
     def set_text(self, text):
         text = [text]
         super(MessageBox, self).set_text(text)
+
+    def search(self, search, attribute):
+        self.log.debug("search called ===============")
+        return self.text.search(search, attribute)
 
 
 @mouse_scroll_decorator.ScrollByWheel
@@ -66,12 +71,33 @@ class MessageView(urwid.WidgetWrap, mywid.Searchable):
         self.grid = mywid.MyGridFlow([self.messagebox],
                                      cell_width=380, h_sep=1, v_sep=1, align='left')
         self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
+        self._w.contents.append((self.app.header, ('pack', 1)))
         self._w.contents.append((urwid.Divider(),('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
         self.listbox.body.append(self.grid)
 
         self.refresh()
 
+    def keypress(self, size, key):
+        if self.searchKeypress(size, key):
+            return None
+
+        if not self.app.input_buffer:
+            key = super(MessageView, self).keypress(size, key)
+        keys = self.app.input_buffer + [key]
+        commands = self.app.config.keymap.getCommands(keys)
+        ret = self.handleCommands(commands)
+        if ret is True:
+            if keymap.FURTHER_INPUT not in commands:
+                self.app.clearInputBuffer()
+            return None
+        return key
+
+    def handleCommands(self, commands):
+        self.log.debug('handleCommands called')
+        if keymap.INTERACTIVE_SEARCH in commands:
+            self.searchStart()
+            return True
 
     def selectable(self):
         return True
