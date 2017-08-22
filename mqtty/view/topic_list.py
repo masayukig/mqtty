@@ -37,7 +37,6 @@ class ColumnInfo(object):
 COLUMNS = [
     ColumnInfo('No.',  'given',   5),
     ColumnInfo('Topic',   'weight',  1),
-    ColumnInfo('Updated', 'given',  20),
     ColumnInfo('# of MSG', 'given',   9),
 ]
 
@@ -45,7 +44,6 @@ class TopicListHeader(urwid.WidgetWrap):
     def __init__(self):
         cols = [(5, urwid.Text(u' No.')),
                  urwid.Text(u' Topic'),
-                 (20, urwid.Text(u'Updated')),
                  (9,  urwid.Text(u'# of MSG')),
         ]
         super(TopicListHeader, self).__init__(urwid.Columns(cols))
@@ -180,13 +178,6 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
             self.clearTopicList()
             self.refresh()
             return True
-        if keymap.SORT_BY_UPDATED in commands:
-            if not len(self.listbox.body):
-                return True
-            self.sort_by = 'updated'
-            self.clearTopicList()
-            self.refresh()
-            return True
         if keymap.SORT_BY_TOPIC in commands:
             if not len(self.listbox.body):
                 return True
@@ -260,12 +251,10 @@ class TopicRow(urwid.Button, TopicListColumns):
         # FIXME: showing 'topic_key' is just for debugging. This should be removed.
         self.topic_key = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')
-        self.updated = urwid.Text(u'', align=urwid.RIGHT)
         self.num_msg = urwid.Text(u'', align=urwid.RIGHT)
         col = urwid.Columns([
             ('fixed', 5, self.topic_key),
             self.name,
-            ('fixed', 20, self.updated),
             ('fixed', 9, self.num_msg),
         ])
         self.row_style = urwid.AttrMap(col, '')
@@ -281,7 +270,6 @@ class TopicRow(urwid.Button, TopicListColumns):
     def update(self, topic, num_msg):
         # FIXME: showing 'topic_key' is just for debugging. This should be removed.
         self.topic_key.set_text('%i ' % topic.key)
-        self.updated.set_text(str(topic.updated))
         self.num_msg.set_text('%i ' % num_msg)
         #self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
 
