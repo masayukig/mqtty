@@ -243,10 +243,20 @@ class DatabaseSession(object):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def getMessagesByTopic(self, topic):
-        query = self.session().query(Message)
-        query = query.filter_by(topic_key=topic.key)
-        return query.order_by(Message.key).all()
+    def getMessagesByTopic(self, topic, sort_by='key'):
+        q = self.session().query(Message)
+        q = q.filter_by(topic_key=topic.key)
+        if not isinstance(sort_by, (list, tuple)):
+            sort_by = [sort_by]
+        for s in sort_by:
+            if s == 'key':
+                q = q.order_by(message_table.c.key)
+            elif s == 'updated':
+                q = q.order_by(message_table.c.updated)
+            elif s == 'name':
+                q = q.order_by(message_table.c.name)
+        self.database.log.debug("Search SQL: %s" % q)
+        return q.all()
 
     def createTopic(self, *args, **kw):
         o = Topic(*args, **kw)

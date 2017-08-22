@@ -62,6 +62,8 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         self.searchInit()
         self.app = app
         self.topic = topic
+        self.reverse = False
+        self.sort_by = 'key'
         self.message_rows = {}
         self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         self.refresh()
@@ -83,7 +85,10 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         len(self.listbox.body)
         i = 0
         with self.app.db.getSession() as session:
-            for message in session.getMessagesByTopic(self.topic):
+            message_list = session.getMessagesByTopic(self.topic, sort_by=self.sort_by)
+            if self.reverse:
+                message_list.reverse()
+            for message in message_list:
                 key = message.key
                 row = self.message_rows.get(key)
                 if not row:
@@ -134,7 +139,7 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
             if not len(self.listbox.body):
                 return True
             self.sort_by = 'updated'
-            self.clearTopicList()
+            self.clearMessageList()
             self.refresh()
             return True
         if keymap.SORT_BY_REVERSE in commands:
@@ -144,7 +149,7 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
                 self.reverse = False
             else:
                 self.reverse = True
-            self.clearTopicList()
+            self.clearMessageList()
             self.refresh()
             return True
         if keymap.INTERACTIVE_SEARCH in commands:
