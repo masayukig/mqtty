@@ -72,6 +72,7 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         self._w.contents.append((urwid.Divider(),('pack', 1)))
         self._w.contents.append((urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
+        self._w.set_focus(3)
 
     def selectable(self):
         return True

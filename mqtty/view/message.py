@@ -77,6 +77,7 @@ class MessageView(urwid.WidgetWrap, mywid.Searchable):
         self.listbox.body.append(self.grid)
 
         self.refresh()
+        self._w.set_focus(2)
 
     def keypress(self, size, key):
         if self.searchKeypress(size, key):
