@@ -428,7 +428,7 @@ class App(object):
             self.clearInputBuffer()
             self.frame.body = widget
 
-    def refresh(self, data=None, force=False):
+    def refresh(self, data=None, force=True):
         self.log.debug("app.refresh called =============")
         widget = self.frame.body
         while isinstance(widget, urwid.Overlay):

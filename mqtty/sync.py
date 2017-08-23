@@ -158,7 +158,7 @@ class Sync(object):
             session.createMessage(str(msg.payload.decode('utf-8')), topic)
         # self.app.db.append(msg)
         self.log.debug(msg.topic + ": " + str(msg.payload))
-        self.app.refresh()
+        self.app.refresh(force=True)
 
     def run(self, pipe):
         task = None
