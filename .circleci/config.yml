@@ -42,7 +42,7 @@ jobs:
       # FIXME: implement tests and run them!
       # So, for now, just run pep8
       - run:
-          name: run tests
+          name: pep8
           command: |
             . .venv/bin/activate
             flake8
