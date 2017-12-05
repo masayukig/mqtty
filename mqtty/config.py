@@ -14,20 +14,18 @@
 # under the License.
 
 import collections
-import getpass
 import os
 import re
 try:
     import ordereddict
-except:
+except ImportError:
     pass
 import yaml
 
-from six.moves.urllib import parse as urlparse
 import voluptuous as v
 
-import mqtty.palette
 import mqtty.keymap
+import mqtty.palette
 
 try:
     OrderedDict = collections.OrderedDict

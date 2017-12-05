@@ -165,18 +165,19 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
 
 class MessageListColumns(object):
     def updateColumns(self):
-        del self.columns.contents[:]
-        cols = self.columns.contents
-        options = self.columns.options
+        pass
+        # del self.columns.contents[:]
+        # cols = self.columns.contents
+        # options = self.columns.options
 
-        for colinfo in COLUMNS:
-            if colinfo.name in self.enabled_columns:
-                attr = colinfo.name.lower().replace(' ', '_')
-                cols.append((getattr(self, attr),
-                             options(*colinfo.options)))
+        # for colinfo in COLUMNS:
+        #     if colinfo.name in self.enabled_columns:
+        #         attr = colinfo.name.lower().replace(' ', '_')
+        #         cols.append((getattr(self, attr),
+        #                      options(*colinfo.options)))
 
-        for c in self.category_columns:
-            cols.append(c)
+        # for c in self.category_columns:
+        #     cols.append(c)
 
 
 class MessageRow(urwid.Button):

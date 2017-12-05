@@ -14,7 +14,6 @@
 # under the License.
 
 import argparse
-import datetime
 import dateutil
 import fcntl
 import functools
@@ -32,19 +31,16 @@ import webbrowser
 import six
 from six.moves import queue
 from six.moves.urllib import parse as urlparse
-import sqlalchemy.exc
 import urwid
 
-from mqtty import db
 from mqtty import config
+from mqtty import db
 from mqtty import keymap
 from mqtty import mywid
 from mqtty import sync
-import mqtty.view
-from mqtty.view import mouse_scroll_decorator
-#from mqtty.view import message_list as view_message_list
-from mqtty.view import topic_list as view_topic_list
 import mqtty.version
+import mqtty.view
+from mqtty.view import topic_list as view_topic_list
 
 WELCOME_TEXT = """\
 Welcome to Mqtty!
@@ -201,13 +197,12 @@ class SearchDialog(mywid.ButtonDialog):
 # From: cpython/file/2.7/Lib/webbrowser.py with modification to
 # redirect stdin/out/err.
 class BackgroundBrowser(webbrowser.GenericBrowser):
-    """Class for all browsers which are to be started in the
-       background."""
+    """Class for all browsers which are to be started in the background."""
 
     def open(self, url, new=0, autoraise=True):
         cmdline = [self.name] + [arg.replace("%s", url)
                                  for arg in self.args]
-        inout = file(os.devnull, "r+")
+        inout = open(os.devnull, "r+")
         try:
             if sys.platform[:3] == 'win':
                 p = subprocess.Popen(cmdline)
@@ -416,9 +411,9 @@ class App(object):
         self.refresh(force=True)
 
     def findStoryList(self):
-        for widget in reversed(self.screens):
-            if isinstance(widget, view_story_list.StoryListView):
-                return widget
+        # for widget in reversed(self.screens):
+        #     if isinstance(widget, view_story_list.StoryListView):
+        #         return widget
         return None
 
     def clearHistory(self):
@@ -613,14 +608,14 @@ class App(object):
         self.logged_warnings.add(str(message))
         # Log this warning, but never display it to the user; it is
         # nearly un-actionable.
-        if category == requestsexceptions.InsecurePlatformWarning:
-            return
-        if category == requestsexceptions.SNIMissingWarning:
-            return
+        # if category == requestsexceptions.InsecurePlatformWarning:
+        #     return
+        # if category == requestsexceptions.SNIMissingWarning:
+        #     return
         # Disable InsecureRequestWarning when certificate validation is disabled
-        if not self.config.verify_ssl:
-            if category == requestsexceptions.InsecureRequestWarning:
-                return
+        # if not self.config.verify_ssl:
+        #     if category == requestsexceptions.InsecureRequestWarning:
+        #         return
         self.error_queue.put(('Warning', m))
         os.write(self.error_pipe, six.b('error\n'))
 
@@ -647,8 +642,8 @@ class PrintKeymapAction(argparse.Action):
 
 class PrintPaletteAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        for attr in sorted(palette.DEFAULT_PALETTE.keys()):
-            print(attr)
+        # for attr in sorted(palette.DEFAULT_PALETTE.keys()):
+        #     print(attr)
         sys.exit(0)
 
 class OpenChangeAction(argparse.Action):
@@ -656,7 +651,7 @@ class OpenChangeAction(argparse.Action):
         cf = config.Config(namespace.server, namespace.palette,
                            namespace.keymap, namespace.path)
         url = values[0]
-        result = urlparse.urlparse(values[0])
+        urlparse.urlparse(values[0])
         if not url.startswith(cf.url):
             print('Supplied URL must start with %s' % (cf.url,))
             sys.exit(1)
