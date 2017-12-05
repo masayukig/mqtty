@@ -14,27 +14,16 @@
 # under the License.
 
 import collections
-import errno
 import logging
-import math
-import os
-import re
 import threading
-import json
-import time
-import datetime
 
-import dateutil.parser
-import dateutil.tz
 try:
     import ordereddict
 except:
     pass
 import requests
 import requests.utils
-import six
 from six.moves import queue
-from six.moves.urllib import parse as urlparse
 
 import paho.mqtt.client as mqtt
 
@@ -65,8 +54,8 @@ class MultiQueue(object):
         count = 0
         self.condition.acquire()
         try:
-            for queue in self.queues.values():
-                count += len(queue)
+            for q in self.queues.values():
+                count += len(q)
             return count + len(self.incomplete)
         finally:
             self.condition.release()
@@ -87,9 +76,9 @@ class MultiQueue(object):
         self.condition.acquire()
         try:
             while True:
-                for queue in self.queues.values():
+                for q in self.queues.values():
                     try:
-                        ret = queue.popleft()
+                        ret = q.popleft()
                         self.incomplete.append(ret)
                         return ret
                     except IndexError:
@@ -127,7 +116,7 @@ class Sync(object):
         self.account_id = None
         self.app = app
         self.log = logging.getLogger('mqtty.sync')
-        self.queue = MultiQueue([HIGH_PRIORITY, NORMAL_PRIORITY, LOW_PRIORITY])
+        self.q = MultiQueue([HIGH_PRIORITY, NORMAL_PRIORITY, LOW_PRIORITY])
         self.result_queue = queue.Queue()
         self.session = requests.Session()
         # Create a websockets client
@@ -161,12 +150,12 @@ class Sync(object):
         self.app.refresh(force=True)
 
     def run(self, pipe):
-        task = None
+        # task = None
         self.client.loop_forever()
         # while True:
         #     task = self._run(pipe, task)
 
     def _run(self, pipe, task=None):
         if not task:
-            task = self.queue.get()
+            task = self.q.get()
         self.log.debug('Run: %s' % (task,))

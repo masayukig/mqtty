@@ -13,21 +13,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import re
 import time
 import logging
 import threading
 
 import alembic
 import alembic.config
-import six
 import sqlalchemy
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, Text, UniqueConstraint, func
 from sqlalchemy.schema import ForeignKey
-from sqlalchemy.orm import mapper, sessionmaker, relationship, scoped_session, joinedload
+from sqlalchemy.orm import mapper, sessionmaker, relationship, scoped_session
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import and_
 
 metadata = MetaData()
 topic_table = Table(
@@ -56,14 +52,15 @@ topic_message_table = Table(
 
 
 class Topic(object):
-    def __init__(self, name):
+    def __init__(self, name, key=None):
         self.name = name
+        self.key = key
 
     def addMessage(self, message):
         session = Session.object_session(self)
         seq = max([x.sequence for x in self.topic_messages] + [0])
-        tm = TopicMessage(topic, self, seq+1)
-        self.topic_messages.append(pt)
+        tm = TopicMessage(self.name, self, seq+1)
+        self.topic_messages.append(tm)
         self.messages.append(message)
         session.add(tm)
         session.flush()
@@ -71,7 +68,8 @@ class Topic(object):
     def removeMessage(self, message):
         session = Session.object_session(self)
         for tm in self.topic_messages:
-            if tm.topic_key == topic.key:
+            # FIXME:???
+            if tm.topic_key == self.key:
                 self.topic_messages.remove(tm)
                 session.delete(tm)
         self.messages.remove(message)
@@ -94,7 +92,7 @@ class Message(object):
         seq = max([x.sequence for x in self.topic_messages] + [0])
         tm = TopicMessage(topic, self, seq+1)
         self.topic_messages.append(tm)
-        self.topics.append(project)
+        # self.topics.append(project)
         session.add(tm)
         session.flush()
 

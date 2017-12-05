@@ -14,7 +14,6 @@
 # under the License.
 
 import collections
-import getpass
 import os
 import re
 try:
@@ -23,7 +22,6 @@ except:
     pass
 import yaml
 
-from six.moves.urllib import parse as urlparse
 import voluptuous as v
 
 import mqtty.palette
