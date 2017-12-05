@@ -18,14 +18,14 @@ import os
 import re
 try:
     import ordereddict
-except:
+except ImportError:
     pass
 import yaml
 
 import voluptuous as v
 
-import mqtty.palette
 import mqtty.keymap
+import mqtty.palette
 
 try:
     OrderedDict = collections.OrderedDict

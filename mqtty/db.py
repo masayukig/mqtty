@@ -13,9 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import time
 import logging
 import threading
+import time
 
 import alembic
 import alembic.config

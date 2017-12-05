@@ -33,14 +33,14 @@ from six.moves import queue
 from six.moves.urllib import parse as urlparse
 import urwid
 
-from mqtty import db
 from mqtty import config
+from mqtty import db
 from mqtty import keymap
 from mqtty import mywid
 from mqtty import sync
+import mqtty.version
 import mqtty.view
 from mqtty.view import topic_list as view_topic_list
-import mqtty.version
 
 WELCOME_TEXT = """\
 Welcome to Mqtty!
@@ -197,8 +197,7 @@ class SearchDialog(mywid.ButtonDialog):
 # From: cpython/file/2.7/Lib/webbrowser.py with modification to
 # redirect stdin/out/err.
 class BackgroundBrowser(webbrowser.GenericBrowser):
-    """Class for all browsers which are to be started in the
-       background."""
+    """Class for all browsers which are to be started in the background."""
 
     def open(self, url, new=0, autoraise=True):
         cmdline = [self.name] + [arg.replace("%s", url)

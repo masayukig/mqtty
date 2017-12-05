@@ -19,7 +19,7 @@ import threading
 
 try:
     import ordereddict
-except:
+except ImportError:
     pass
 import requests
 import requests.utils
