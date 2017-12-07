@@ -182,14 +182,16 @@ FORMAT_SUBS = (
     (re.compile('meta '), 'META-'),
     (re.compile('f(\d+)'), 'F\\1'),
     (re.compile('([a-z][a-z]+)'), lambda x: x.group(1).upper()),
-    )
+)
+
 
 def formatKey(key):
-    if type(key) == type([]):
-        return  ''.join([formatKey(k) for k in key])
+    if isinstance(key, type([])):
+        return ''.join([formatKey(k) for k in key])
     for subre, repl in FORMAT_SUBS:
         key = subre.sub(repl, key)
     return key
+
 
 class Key(object):
     def __init__(self, key):
@@ -203,7 +205,9 @@ class Key(object):
         return self.keys[key]
 
     def __repr__(self):
-        return '%s %s %s' % (self.__class__.__name__, self.key, self.keys.keys())
+        return '%s %s %s' % (
+            self.__class__.__name__, self.key, self.keys.keys())
+
 
 class KeyMap(object):
     def __init__(self, config):
@@ -220,7 +224,7 @@ class KeyMap(object):
             if command == 'name':
                 continue
             command = command.replace('-', ' ')
-            if type(keys) != type([]):
+            if not isinstance(keys, type([])):
                 keys = [keys]
             self.commandmap[command] = keys
         self.keytree = Key(None)
@@ -231,7 +235,7 @@ class KeyMap(object):
                     tree = self.keytree
                     for i, innerkey in enumerate(key):
                         tree = tree.addKey(innerkey)
-                        if i+1 == len(key):
+                        if i + 1 == len(key):
                             tree.commands.append(command)
                 else:
                     tree = self.keytree.addKey(key)
@@ -277,7 +281,7 @@ class KeyMap(object):
         for key in self.keytree.keys.values():
             for command in key.commands:
                 if command in URWID_COMMANDS:
-                    urwid.command_map[key.key]=command
+                    urwid.command_map[key.key] = command
 
     def formatKeys(self, command):
         keys = self.getKeys(command)

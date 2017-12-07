@@ -22,6 +22,7 @@ from mqtty import keymap
 from mqtty import mywid
 from mqtty.view import mouse_scroll_decorator
 
+
 class MessageBox(mywid.HyperText):
     def __init__(self, app, message):
         self.app = app
@@ -40,10 +41,12 @@ class MessageBox(mywid.HyperText):
 @mouse_scroll_decorator.ScrollByWheel
 class MessageView(urwid.WidgetWrap, mywid.Searchable):
     title = "Message"
+
     def getCommands(self):
         return [
             (keymap.TOGGLE_LIST_SUBSCRIBED,
-             "Toggle whether only subscribed projects or all projects are listed"),
+             "Toggle whether only subscribed projects or all projects are"
+             " listed"),
             (keymap.TOGGLE_LIST_REVIEWED,
              "Toggle listing of projects with unreviewed changes"),
             (keymap.TOGGLE_SUBSCRIBED,
@@ -68,11 +71,12 @@ class MessageView(urwid.WidgetWrap, mywid.Searchable):
         self.app = app
         self.message = message
         self.messagebox = MessageBox(app, u'')
-        self.grid = mywid.MyGridFlow([self.messagebox],
-                                     cell_width=380, h_sep=1, v_sep=1, align='left')
+        self.grid = mywid.MyGridFlow(
+            [self.messagebox],
+            cell_width=380, h_sep=1, v_sep=1, align='left')
         self.listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         self._w.contents.append((self.app.header, ('pack', 1)))
-        self._w.contents.append((urwid.Divider(),('pack', 1)))
+        self._w.contents.append((urwid.Divider(), ('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
         self.listbox.body.append(self.grid)
 

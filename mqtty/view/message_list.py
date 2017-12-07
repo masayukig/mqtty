@@ -25,20 +25,22 @@ from mqtty.view import mouse_scroll_decorator
 class MessageListHeader(urwid.WidgetWrap):
     def __init__(self):
         cols = [(6, urwid.Text(u' No.')),
-                 urwid.Text(u'Message'),
-                 (20, urwid.Text(u'Updated')),
-                 (11, urwid.Text(u'Size(Chars)')),
-        ]
+                urwid.Text(u'Message'),
+                (20, urwid.Text(u'Updated')),
+                (11, urwid.Text(u'Size(Chars)')),
+                ]
         super(MessageListHeader, self).__init__(urwid.Columns(cols))
 
 
 @mouse_scroll_decorator.ScrollByWheel
 class MessageListView(urwid.WidgetWrap, mywid.Searchable):
     title = "Message"
+
     def getCommands(self):
         return [
             (keymap.TOGGLE_LIST_SUBSCRIBED,
-             "Toggle whether only subscribed projects or all projects are listed"),
+             "Toggle whether only subscribed projects or all projects are"
+             " listed"),
             (keymap.TOGGLE_LIST_REVIEWED,
              "Toggle listing of projects with unreviewed changes"),
             (keymap.TOGGLE_SUBSCRIBED,
@@ -69,8 +71,9 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         self.refresh()
         self.header = MessageListHeader()
         self._w.contents.append((app.header, ('pack', 1)))
-        self._w.contents.append((urwid.Divider(),('pack', 1)))
-        self._w.contents.append((urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
+        self._w.contents.append((urwid.Divider(), ('pack', 1)))
+        self._w.contents.append(
+            (urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
         self._w.set_focus(3)
 
@@ -86,7 +89,8 @@ class MessageListView(urwid.WidgetWrap, mywid.Searchable):
         len(self.listbox.body)
         i = 0
         with self.app.db.getSession() as session:
-            message_list = session.getMessagesByTopic(self.topic, sort_by=self.sort_by)
+            message_list = session.getMessagesByTopic(
+                self.topic, sort_by=self.sort_by)
             if self.reverse:
                 message_list.reverse()
             for message in message_list:
@@ -183,7 +187,7 @@ class MessageListColumns(object):
 class MessageRow(urwid.Button):
     message_focus_map = {None: 'focused',
                          # 'focused-message': 'focused-subscribed-project',
-    }
+                         }
 
     def selectable(self):
         return True
@@ -192,9 +196,9 @@ class MessageRow(urwid.Button):
         self.topic_name = name
         name = name
         if self.mark:
-            name = '%'+name
+            name = '%' + name
         else:
-            name = ' '+name
+            name = ' ' + name
         self.name.set_text(name)
 
     def search(self, search, attribute):
@@ -205,21 +209,22 @@ class MessageRow(urwid.Button):
                                          user_data=(message))
         self.mark = False
         self._style = None
-        self.message_key = urwid.Text(u'', align=urwid.RIGHT) # message.key
+        self.message_key = urwid.Text(u'', align=urwid.RIGHT)  # message.key
         self.name = mywid.SearchableText('')
         self._setName(message.message)
         self.updated = urwid.Text(u'', align=urwid.RIGHT)
         self.size = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')
         col = urwid.Columns([
-                ('fixed', 6, self.message_key),
-                self.name,
-                ('fixed', 20, self.updated),
-                ('fixed', 11, self.size),
-                ])
+            ('fixed', 6, self.message_key),
+            self.name,
+            ('fixed', 20, self.updated),
+            ('fixed', 11, self.size),
+        ])
         self.row_style = urwid.AttrMap(col, '')
-        self._w = urwid.AttrMap(self.row_style, None, focus_map=self.message_focus_map)
-        self._style = None # 'focused-message'
+        self._w = urwid.AttrMap(self.row_style, None,
+                                focus_map=self.message_focus_map)
+        self._style = None  # 'focused-message'
         self.row_style.set_attr_map({None: self._style})
         self.update(message)
 

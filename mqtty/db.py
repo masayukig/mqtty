@@ -20,7 +20,8 @@ import time
 import alembic
 import alembic.config
 import sqlalchemy
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, Text, UniqueConstraint, func
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer
+from sqlalchemy import String, Boolean, DateTime, Text, UniqueConstraint, func
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import mapper, sessionmaker, relationship, scoped_session
 from sqlalchemy.orm.session import Session
@@ -32,14 +33,16 @@ topic_table = Table(
     Column('name', String(255), index=True, unique=True, nullable=False),
     Column('subscribed', Boolean, index=True, default=False),
     Column('description', Text, nullable=False, default=''),
-    Column('updated', DateTime, index=True, default=func.now(), onupdate=func.now()),
+    Column('updated', DateTime, index=True,
+           default=func.now(), onupdate=func.now()),
 )
 message_table = Table(
     'message', metadata,
     Column('key', Integer, primary_key=True),
     Column('topic_key', Integer, ForeignKey("topic.key"), index=True),
     Column('message', Text, nullable=False),
-    Column('updated', DateTime, index=True, default=func.now(), onupdate=func.now()),
+    Column('updated', DateTime, index=True,
+           default=func.now(), onupdate=func.now()),
 )
 topic_message_table = Table(
     'topic_message', metadata,
@@ -47,8 +50,9 @@ topic_message_table = Table(
     Column('topic_key', Integer, ForeignKey("topic.key"), index=True),
     Column('message_key', Integer, ForeignKey("message.key"), index=True),
     Column('sequence', Integer, nullable=False),
-    UniqueConstraint('message_key', 'sequence', name='message_key_sequence_const'),
-    )
+    UniqueConstraint('message_key', 'sequence',
+                     name='message_key_sequence_const'),
+)
 
 
 class Topic(object):
@@ -59,7 +63,7 @@ class Topic(object):
     def addMessage(self, message):
         session = Session.object_session(self)
         seq = max([x.sequence for x in self.topic_messages] + [0])
-        tm = TopicMessage(self.name, self, seq+1)
+        tm = TopicMessage(self.name, self, seq + 1)
         self.topic_messages.append(tm)
         self.messages.append(message)
         session.add(tm)
@@ -74,6 +78,7 @@ class Topic(object):
                 session.delete(tm)
         self.messages.remove(message)
         session.flush()
+
 
 class TopicMessage(object):
     def __init__(self, project, topic, sequence):
@@ -90,7 +95,7 @@ class Message(object):
     def addTopic(self, topic):
         session = Session.object_session(self)
         seq = max([x.sequence for x in self.topic_messages] + [0])
-        tm = TopicMessage(topic, self, seq+1)
+        tm = TopicMessage(topic, self, seq + 1)
         self.topic_messages.append(tm)
         # self.topics.append(project)
         session.add(tm)
@@ -121,14 +126,13 @@ mapper(Message, message_table, properties=dict(
 mapper(TopicMessage, topic_message_table)
 
 
-
 class Database(object):
     def __init__(self, app, dburi, search):
         self.log = logging.getLogger('mqtty.db')
         self.dburi = dburi
         self.search = search
         self.engine = create_engine(self.dburi)
-        #metadata.create_all(self.engine)
+        # metadata.create_all(self.engine)
         self.migrate(app)
         # If we want the objects returned from query() to be usable
         # outside of the session, we need to expunge them from the session,
@@ -186,7 +190,8 @@ class DatabaseSession(object):
         self.session().close()
         self.session = None
         end = time.time()
-        self.database.log.debug("Database lock held %s seconds" % (end-self.start,))
+        self.database.log.debug(
+            "Database lock held %s seconds" % (end - self.start,))
         self.database.lock.release()
 
     def abort(self):
