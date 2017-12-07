@@ -32,7 +32,8 @@ try:
 except AttributeError:
     OrderedDict = ordereddict.OrderedDict
 
-DEFAULT_CONFIG_PATH='~/.mqtty.yaml'
+DEFAULT_CONFIG_PATH = '~/.mqtty.yaml'
+
 
 class ConfigSchema(object):
     server = {v.Required('name'): str,
@@ -41,8 +42,8 @@ class ConfigSchema(object):
     servers = [server]
 
     topic = {'name': str,
-              'topic': str,
-              }
+             'topic': str,
+             }
     subscribed_topics = [topic]
 
     _sort_by = v.Any('number', 'updated', 'last-seen', 'project')
@@ -64,7 +65,6 @@ class ConfigSchema(object):
                v.Match('(?!name)'): [str]}
 
     palettes = [palette]
-
 
     dashboard = {v.Required('name'): str,
                  v.Required('query'): str,
@@ -122,6 +122,7 @@ class ConfigSchema(object):
                            })
         return schema
 
+
 class Config(object):
     def __init__(self, server=None, palette='default', keymap='default',
                  path=DEFAULT_CONFIG_PATH):
@@ -139,18 +140,19 @@ class Config(object):
 
         self.subscribed_topic = self.get_topic('default')
 
-        self.dburi = server.get('dburi',
-                                'sqlite:///' + os.path.expanduser('~/.mqtty.db'))
+        self.dburi = server.get(
+            'dburi', 'sqlite:///' + os.path.expanduser('~/.mqtty.db'))
         socket_path = server.get('socket', '~/.mqtty.sock')
         self.socket_path = os.path.expanduser(socket_path)
         log_file = server.get('log-file', '~/.mqtty.log')
         self.log_file = os.path.expanduser(log_file)
-        lock_file = server.get('lock-file', '~/.mqtty.%s.lock' % server['name'])
+        lock_file = server.get(
+            'lock-file', '~/.mqtty.%s.lock' % server['name'])
         self.lock_file = os.path.expanduser(lock_file)
 
-        self.palettes = {'default': mqtty.palette.Palette({}),
-                         'light': mqtty.palette.Palette(mqtty.palette.LIGHT_PALETTE),
-                         }
+        self.palettes = {
+            'default': mqtty.palette.Palette({}),
+            'light': mqtty.palette.Palette(mqtty.palette.LIGHT_PALETTE), }
         for p in self.config.get('palettes', []):
             if p['name'] not in self.palettes:
                 self.palettes[p['name']] = mqtty.palette.Palette(p)
@@ -167,8 +169,8 @@ class Config(object):
                 self.keymaps[p['name']].update(p)
         self.keymap = self.keymaps[self.config.get('keymap', keymap)]
 
-
-        self.project_change_list_query = self.config.get('change-list-query', 'status:open')
+        self.project_change_list_query = self.config.get(
+            'change-list-query', 'status:open')
 
         self.diff_view = self.config.get('diff-view', 'side-by-side')
 
@@ -200,11 +202,11 @@ class Config(object):
         self.size_column = self.config.get('size-column', {})
         self.size_column['type'] = self.size_column.get('type', 'graph')
         if self.size_column['type'] == 'graph':
-            self.size_column['thresholds'] = self.size_column.get('thresholds',
-                [1, 10, 100, 1000])
+            self.size_column['thresholds'] = self.size_column.get(
+                'thresholds', [1, 10, 100, 1000])
         else:
-            self.size_column['thresholds'] = self.size_column.get('thresholds',
-                [1, 10, 100, 200, 400, 600, 800, 1000])
+            self.size_column['thresholds'] = self.size_column.get(
+                'thresholds', [1, 10, 100, 200, 400, 600, 800, 1000])
 
     def getServer(self, name=None):
         for server in self.config['servers']:

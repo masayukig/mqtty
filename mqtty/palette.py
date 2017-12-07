@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-DEFAULT_PALETTE={
+DEFAULT_PALETTE = {
     'focused': ['default,standout', ''],
     'header': ['white,bold', 'dark blue'],
     'error': ['light red', 'dark blue'],
@@ -114,7 +114,7 @@ DEFAULT_PALETTE={
     'focused-line-count-threshold-7': ['dark red,standout', ''],
     'line-count-threshold-8': ['light red', ''],
     'focused-line-count-threshold-8': ['light red,standout', ''],
-    }
+}
 
 # A delta from the default palette
 LIGHT_PALETTE = {
@@ -135,7 +135,8 @@ LIGHT_PALETTE = {
     'change-message-own-header': ['black,bold', ''],
     'focused-link': ['dark blue,bold', ''],
     'filename': ['dark cyan', ''],
-    }
+}
+
 
 class Palette(object):
     def __init__(self, config):
@@ -151,6 +152,6 @@ class Palette(object):
 
     def getPalette(self):
         ret = []
-        for k,v in self.palette.items():
-            ret.append(tuple([k]+v))
+        for k, v in self.palette.items():
+            ret.append(tuple([k] + v))
         return ret

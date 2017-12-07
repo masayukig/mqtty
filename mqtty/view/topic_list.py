@@ -35,27 +35,30 @@ class ColumnInfo(object):
 
 
 COLUMNS = [
-    ColumnInfo('No.',  'given',   5),
-    ColumnInfo('Topic',   'weight',  1),
-    ColumnInfo('# of MSG', 'given',   9),
+    ColumnInfo('No.', 'given', 5),
+    ColumnInfo('Topic', 'weight', 1),
+    ColumnInfo('# of MSG', 'given', 9),
 ]
+
 
 class TopicListHeader(urwid.WidgetWrap):
     def __init__(self):
         cols = [(5, urwid.Text(u' No.')),
-                 urwid.Text(u' Topic'),
-                 (9,  urwid.Text(u'# of MSG')),
-        ]
+                urwid.Text(u' Topic'),
+                (9, urwid.Text(u'# of MSG')),
+                ]
         super(TopicListHeader, self).__init__(urwid.Columns(cols))
 
 
 @mouse_scroll_decorator.ScrollByWheel
 class TopicListView(urwid.WidgetWrap, mywid.Searchable):
     title = "Topics"
+
     def getCommands(self):
         return [
             (keymap.TOGGLE_LIST_SUBSCRIBED,
-             "Toggle whether only subscribed projects or all projects are listed"),
+             "Toggle whether only subscribed projects or all projects are"
+             " listed"),
             (keymap.TOGGLE_LIST_REVIEWED,
              "Toggle listing of projects with unreviewed changes"),
             (keymap.TOGGLE_SUBSCRIBED,
@@ -101,8 +104,9 @@ class TopicListView(urwid.WidgetWrap, mywid.Searchable):
         self.refresh()
         self.header = TopicListHeader()
         self._w.contents.append((app.header, ('pack', 1)))
-        self._w.contents.append((urwid.Divider(),('pack', 1)))
-        self._w.contents.append((urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
+        self._w.contents.append((urwid.Divider(), ('pack', 1)))
+        self._w.contents.append(
+            (urwid.AttrWrap(self.header, 'table-header'), ('pack', 1)))
         self._w.contents.append((self.listbox, ('weight', 1)))
         self._w.set_focus(3)
 
@@ -223,9 +227,9 @@ class TopicListColumns(object):
 
 class TopicRow(urwid.Button, TopicListColumns):
     topic_focus_map = {None: 'focused',
-#                         'subscribed-project': 'focused-subscribed-project',
-#                         'marked-project': 'focused-marked-project',
-    }
+                       # 'subscribed-project': 'focused-subscribed-project',
+                       # 'marked-project': 'focused-marked-project',
+                       }
 
     def selectable(self):
         return True
@@ -234,9 +238,9 @@ class TopicRow(urwid.Button, TopicListColumns):
         self.topic_name = name
         name = name
         if self.mark:
-            name = '%'+name
+            name = '%' + name
         else:
-            name = ' '+name
+            name = ' ' + name
         self.name.set_text(name)
 
     def __init__(self, topic, num_msg, callback=None):
@@ -244,11 +248,12 @@ class TopicRow(urwid.Button, TopicListColumns):
                                        user_data=(topic))
         self.mark = False
         self._style = None
-        #self.topic_key = topic.key
+        # self.topic_key = topic.key
         self.name = mywid.SearchableText('')
 
         self._setName(topic.name)
-        # FIXME: showing 'topic_key' is just for debugging. This should be removed.
+        # FIXME: showing 'topic_key' is just for debugging. This should be
+        # removed.
         self.topic_key = urwid.Text(u'', align=urwid.RIGHT)
         self.name.set_wrap_mode('clip')
         self.num_msg = urwid.Text(u'', align=urwid.RIGHT)
@@ -258,8 +263,9 @@ class TopicRow(urwid.Button, TopicListColumns):
             ('fixed', 9, self.num_msg),
         ])
         self.row_style = urwid.AttrMap(col, '')
-        self._w = urwid.AttrMap(self.row_style, None, focus_map=self.topic_focus_map)
-        self._style = None # 'subscribed-project'
+        self._w = urwid.AttrMap(self.row_style, None,
+                                focus_map=self.topic_focus_map)
+        self._style = None  # 'subscribed-project'
         self.row_style.set_attr_map({None: self._style})
         # self.num_msg = num_msg
         self.update(topic, num_msg)
@@ -268,10 +274,11 @@ class TopicRow(urwid.Button, TopicListColumns):
         return self.name.search(search, attribute)
 
     def update(self, topic, num_msg):
-        # FIXME: showing 'topic_key' is just for debugging. This should be removed.
+        # FIXME: showing 'topic_key' is just for debugging. This should be
+        # removed.
         self.topic_key.set_text('%i ' % topic.key)
         self.num_msg.set_text('%i ' % num_msg)
-        #self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
+        # self._setName(str(topic.key) + " " + topic.name + " " + str(num_msg))
 
     def toggleMark(self):
         self.mark = not self.mark

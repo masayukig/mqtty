@@ -36,24 +36,35 @@ def upgrade():
                     sa.Column('description', sa.Text(), nullable=False),
                     sa.Column('updated', sa.DateTime),
                     sa.PrimaryKeyConstraint('key')
-    )
+                    )
     op.create_index(op.f('ix_topic_name'), 'topic', ['name'], unique=True)
-    op.create_index(op.f('ix_topic_subscribed'), 'topic', ['subscribed'], unique=False)
+    op.create_index(op.f('ix_topic_subscribed'), 'topic',
+                    ['subscribed'], unique=False)
     op.create_table('message',
                     sa.Column('key', sa.Integer(), nullable=False),
-                    sa.Column('topic_key', sa.Integer(), sa.ForeignKey('topic.key'), index=True),
+                    sa.Column('topic_key', sa.Integer(),
+                              sa.ForeignKey('topic.key'), index=True),
                     sa.Column('message', sa.Text(), nullable=False),
                     sa.Column('updated', sa.DateTime),
                     sa.PrimaryKeyConstraint('key')
-    )
-    op.create_table('topic_message',
-                    sa.Column('key', sa.Integer(), nullable=False),
-                    sa.Column('topic_key', sa.Integer(), sa.ForeignKey('topic.key'), index=True),
-                    sa.Column('message_key', sa.Integer(), sa.ForeignKey('message.key'), index=True),
-                    sa.Column('sequence', sa.Integer(), nullable=False),
-                    sa.PrimaryKeyConstraint('key'),
-                    sa.UniqueConstraint('message_key', 'sequence', name='message_key_sequence_const'),
-    )
+                    )
+    op.create_table('topic_message', sa.Column(
+        'key', sa.Integer(),
+        nullable=False),
+        sa.Column(
+        'topic_key', sa.Integer(),
+        sa.ForeignKey('topic.key'),
+        index=True),
+        sa.Column(
+        'message_key', sa.Integer(),
+        sa.ForeignKey('message.key'),
+        index=True),
+        sa.Column('sequence', sa.Integer(),
+                  nullable=False),
+        sa.PrimaryKeyConstraint('key'),
+        sa.UniqueConstraint(
+        'message_key', 'sequence',
+        name='message_key_sequence_const'),)
 
 
 def downgrade():
@@ -62,4 +73,3 @@ def downgrade():
     op.drop_table('topic')
     op.drop_table('message')
     op.drop_table('topic_message')
-

@@ -55,6 +55,7 @@ require you to press function-F1 or alt-F1 instead.
 
 """
 
+
 class StatusHeader(urwid.WidgetWrap):
     def __init__(self, app):
         super(StatusHeader, self).__init__(urwid.Columns([]))
@@ -109,7 +110,8 @@ class StatusHeader(urwid.WidgetWrap):
         if self._held != self.held:
             self._held = self.held
             if self._held:
-                self.held_widget.set_text(('error', u'Held: %s (%s)' % (self._held, self.held_key)))
+                self.held_widget.set_text(
+                    ('error', u'Held: %s (%s)' % (self._held, self.held_key)))
             else:
                 self.held_widget.set_text(u'')
         if self._error != self.error:
@@ -150,7 +152,8 @@ class BreadCrumbBar(urwid.WidgetWrap):
         return urwid.Text(text, wrap='clip')
 
     def _get_breadcrumb_column_options(self):
-        return self.breadcrumbs.options("given", BreadCrumbBar.BREADCRUMB_WIDTH)
+        return self.breadcrumbs.options(
+            "given", BreadCrumbBar.BREADCRUMB_WIDTH)
 
     def _update(self, screens):
         breadcrumb_contents = []
@@ -163,26 +166,27 @@ class BreadCrumbBar(urwid.WidgetWrap):
         # in view. Urwid will gracefully handle clipping from the left when
         # there is overflow.as trail grows, shrinks, or screen is resized.
         if len(self.breadcrumbs.contents):
-            self.breadcrumbs.focus_position = len(self.breadcrumbs.contents) - 1
+            self.breadcrumbs.focus_position = len(
+                self.breadcrumbs.contents) - 1
 
 
 class SearchDialog(mywid.ButtonDialog):
     signals = ['search', 'cancel']
+
     def __init__(self, app, default):
         self.app = app
         search_button = mywid.FixedButton('Search')
         cancel_button = mywid.FixedButton('Cancel')
         urwid.connect_signal(search_button, 'click',
-                             lambda button:self._emit('search'))
+                             lambda button: self._emit('search'))
         urwid.connect_signal(cancel_button, 'click',
-                             lambda button:self._emit('cancel'))
-        super(SearchDialog, self).__init__("Search",
-                                           "Enter a change number or search string.",
-                                           entry_prompt="Search: ",
-                                           entry_text=default,
-                                           buttons=[search_button,
-                                                    cancel_button],
-                                           ring=app.ring)
+                             lambda button: self._emit('cancel'))
+        super(
+            SearchDialog, self).__init__(
+            "Search", "Enter a change number or search string.",
+            entry_prompt="Search: ", entry_text=default,
+            buttons=[search_button, cancel_button],
+            ring=app.ring)
 
     def keypress(self, size, key):
         if not self.app.input_buffer:
@@ -196,6 +200,8 @@ class SearchDialog(mywid.ButtonDialog):
 
 # From: cpython/file/2.7/Lib/webbrowser.py with modification to
 # redirect stdin/out/err.
+
+
 class BackgroundBrowser(webbrowser.GenericBrowser):
     """Class for all browsers which are to be started in the background."""
 
@@ -217,6 +223,7 @@ class BackgroundBrowser(webbrowser.GenericBrowser):
         except OSError:
             return False
 
+
 class ProjectCache(object):
     def __init__(self):
         self.projects = {}
@@ -224,14 +231,15 @@ class ProjectCache(object):
     def get(self, project):
         if project.key not in self.projects:
             self.projects[project.key] = dict(
-                active_stories = len(project.active_stories),
-                stories = len(project.stories),
+                active_stories=len(project.active_stories),
+                stories=len(project.stories),
             )
         return self.projects[project.key]
 
     def clear(self, project):
         if project.key in self.projects:
             del self.projects[project.key]
+
 
 class App(object):
     simple_story_search = re.compile('^(\d+)$')
@@ -270,7 +278,8 @@ class App(object):
         try:
             fcntl.lockf(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
-            print("error: another instance of mqtty is running for: %s" % self.config.server['name'])
+            print("error: another instance of mqtty is running for: %s" %
+                  self.config.server['name'])
             sys.exit(1)
 
         self.project_cache = ProjectCache()
@@ -300,10 +309,10 @@ class App(object):
         self.status.update(title=screen.title)
         self.updateStatusQueries()
         self.frame = urwid.Frame(body=screen, footer=self.footer)
-        self.loop = urwid.MainLoop(self.frame, palette=self.config.palette.getPalette(),
-                                   handle_mouse=self.config.handle_mouse,
-                                   unhandled_input=self.unhandledInput,
-                                   input_filter=self.inputFilter)
+        self.loop = urwid.MainLoop(
+            self.frame, palette=self.config.palette.getPalette(),
+            handle_mouse=self.config.handle_mouse,
+            unhandled_input=self.unhandledInput, input_filter=self.inputFilter)
 
         self.sync_pipe = self.loop.watch_pipe(self.refresh)
         self.error_queue = queue.Queue()
@@ -323,12 +332,13 @@ class App(object):
             self.welcome()
 
         self.loop.screen.tty_signal_keys(start='undefined', stop='undefined')
-        #self.loop.screen.set_terminal_properties(colors=88)
+        # self.loop.screen.set_terminal_properties(colors=88)
 
         self.startSocketListener()
 
         if not disable_sync:
-            self.sync_thread = threading.Thread(target=self.sync.run, args=(self.sync_pipe,))
+            self.sync_thread = threading.Thread(
+                target=self.sync.run, args=(self.sync_pipe,))
             self.sync_thread.daemon = True
             self.sync_thread.start()
         else:
@@ -463,7 +473,8 @@ class App(object):
                                 min_width=min_width, min_height=min_height)
         if hasattr(widget, 'title'):
             overlay.title = widget.title
-        self.log.debug("Overlaying %s on screen %s" % (widget, self.frame.body))
+        self.log.debug("Overlaying %s on screen %s" %
+                       (widget, self.frame.body))
         self.screens.append(self.frame.body)
         self.frame.body = overlay
 
@@ -471,7 +482,8 @@ class App(object):
         return list(mywid.GLOBAL_HELP)
 
     def getGlobalHelp(self):
-        keys =  [(k, self.config.keymap.formatKeys(k), t) for (k, t) in self.getGlobalCommands()]
+        keys = [(k, self.config.keymap.formatKeys(k), t)
+                for (k, t) in self.getGlobalCommands()]
         for d in self.config.dashboards.values():
             keys.append(('', d['key'], d['name']))
         return keys
@@ -490,32 +502,31 @@ class App(object):
         for title, items in parts:
             if text:
                 text += '\n'
-            text += title+'\n'
-            text += '%s\n' % ('='*len(title),)
+            text += title + '\n'
+            text += '%s\n' % ('=' * len(title),)
             for cmd, keys, cmdtext in items:
                 text += '{keys:{width}} {text}\n'.format(
                     keys=keys, width=keylen, text=cmdtext)
         dialog = mywid.MessageDialog('Help for %s' % version(), text)
         lines = text.split('\n')
         urwid.connect_signal(dialog, 'close',
-            lambda button: self.backScreen())
-        self.popup(dialog, min_width=76, min_height=len(lines)+4)
+                             lambda button: self.backScreen())
+        self.popup(dialog, min_width=76, min_height=len(lines) + 4)
 
     def welcome(self):
         text = WELCOME_TEXT
         dialog = mywid.MessageDialog('Welcome', text)
         lines = text.split('\n')
         urwid.connect_signal(dialog, 'close',
-            lambda button: self.backScreen())
-        self.popup(dialog, min_width=76, min_height=len(lines)+4)
-
+                             lambda button: self.backScreen())
+        self.popup(dialog, min_width=76, min_height=len(lines) + 4)
 
     def searchDialog(self, default):
         dialog = SearchDialog(self, default)
         urwid.connect_signal(dialog, 'cancel',
-            lambda button: self.backScreen())
+                             lambda button: self.backScreen())
         urwid.connect_signal(dialog, 'search',
-            lambda button: self._searchDialog(dialog))
+                             lambda button: self._searchDialog(dialog))
         self.popup(dialog, min_width=76, min_height=8)
 
     def _searchDialog(self, dialog):
@@ -535,9 +546,9 @@ class App(object):
                              lambda button: self.backScreen())
 
         cols, rows = self.loop.screen.get_cols_rows()
-        cols = int(cols*.5)
+        cols = int(cols * .5)
         lines = textwrap.wrap(message, cols)
-        min_height = max(4, len(lines)+4)
+        min_height = max(4, len(lines) + 4)
 
         self.popup(dialog, min_height=min_height)
         return None
@@ -606,13 +617,14 @@ class App(object):
         m = warnings.formatwarning(message, category, filename, lineno, line)
         self.log.warning(m)
         self.logged_warnings.add(str(message))
-        # Log this warning, but never display it to the user; it is
-        # nearly un-actionable.
+        # # Log this warning, but never display it to the user; it is
+        # # nearly un-actionable.
         # if category == requestsexceptions.InsecurePlatformWarning:
         #     return
         # if category == requestsexceptions.SNIMissingWarning:
         #     return
-        # Disable InsecureRequestWarning when certificate validation is disabled
+        # # Disable InsecureRequestWarning when certificate validation is
+        # # disabled
         # if not self.config.verify_ssl:
         #     if category == requestsexceptions.InsecureRequestWarning:
         #         return
@@ -628,11 +640,13 @@ class App(object):
             if result is not None:
                 self.openInternalURL(result)
         else:
-            self.log.error("Unable to parse command %s with data %s" % (command, data))
+            self.log.error(
+                "Unable to parse command %s with data %s" % (command, data))
 
 
 def version():
     return "Mqtty version: %s" % mqtty.version.version_info.release_string()
+
 
 class PrintKeymapAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -640,11 +654,13 @@ class PrintKeymapAction(argparse.Action):
             print(cmd.replace(' ', '-'))
         sys.exit(0)
 
+
 class PrintPaletteAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         # for attr in sorted(palette.DEFAULT_PALETTE.keys()):
         #     print(attr)
         sys.exit(0)
+
 
 class OpenChangeAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -661,6 +677,7 @@ class OpenChangeAction(argparse.Action):
         s.sendall('open %s\n' % url)
         sys.exit(0)
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='Console client for MQTTY')
@@ -673,8 +690,9 @@ def main():
                         help='enable debug logging')
     parser.add_argument('--no-sync', dest='no_sync', action='store_true',
                         help='disable remote syncing')
-    parser.add_argument('--debug-sync', dest='debug_sync', action='store_true',
-                        help='disable most background sync tasks for debugging')
+    parser.add_argument(
+        '--debug-sync', dest='debug_sync', action='store_true',
+        help='disable most background sync tasks for debugging')
     parser.add_argument('--fetch-missing-refs', dest='fetch_missing_refs',
                         action='store_true',
                         help='fetch any refs missing from local repos')

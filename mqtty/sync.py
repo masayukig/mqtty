@@ -29,15 +29,16 @@ import paho.mqtt.client as mqtt
 
 import mqtty.version
 
-HIGH_PRIORITY=0
-NORMAL_PRIORITY=1
-LOW_PRIORITY=2
+HIGH_PRIORITY = 0
+NORMAL_PRIORITY = 1
+LOW_PRIORITY = 2
 
-TIMEOUT=30
+TIMEOUT = 30
 
 
 class OfflineError(Exception):
     pass
+
 
 class MultiQueue(object):
     def __init__(self, priorities):
@@ -109,8 +110,9 @@ class MultiQueue(object):
 
 class Sync(object):
     def __init__(self, app, disable_background_sync):
-        self.user_agent = 'Mqtty/%s %s' % (mqtty.version.version_info.release_string(),
-                                            requests.utils.default_user_agent())
+        self.user_agent = 'Mqtty/%s %s' % (
+            mqtty.version.version_info.release_string(),
+            requests.utils.default_user_agent())
         self.version = (0, 0, 0)
         self.offline = False
         self.account_id = None
@@ -125,7 +127,7 @@ class Sync(object):
         self.client.on_message = self.on_message
 
         # Connect to the firehose
-        #FIREHOSE_HOST = 'firehose.openstack.org'
+        # FIREHOSE_HOST = 'firehose.openstack.org'
         FIREHOSE_HOST = self.app.config.server['host']
         self.log.debug("Connecting to " + FIREHOSE_HOST)
         self.client.connect(FIREHOSE_HOST)
@@ -134,7 +136,7 @@ class Sync(object):
     def on_connect(self, client, userdata, flags, rc):
         self.log.debug("Connected with result code " + str(rc))
         # FIXME: just for draft implementation
-        #self.client.subscribe('#')
+        # self.client.subscribe('#')
         self.client.subscribe(self.app.config.subscribed_topic['topic'])
 
     def on_message(self, client, userdata, msg):
