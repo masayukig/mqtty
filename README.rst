@@ -1,6 +1,9 @@
 Mqtty
 =====
 
+.. image:: https://circleci.com/gh/masayukig/mqtty.svg?style=shield
+    :target: https://circleci.com/gh/masayukig/mqtty
+
 Mqtty is a console-based interface client for MQTT protocol.
 
 .. caution::
