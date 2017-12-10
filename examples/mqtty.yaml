@@ -46,8 +46,8 @@ hide-comments:
   - author: "^(.*CI|Jenkins|Elastic Recheck)$"
 
 # This section defines customized dashboards.  You can supply any
-# Gertty search string and bind them to any key.  They will appear in
-# the global help text, and pressing the key anywhere in Gertty will
+# Mqtty search string and bind them to any key.  They will appear in
+# the global help text, and pressing the key anywhere in Mqtty will
 # discard the current display stack and replace it with the results of
 # the query.
 #
@@ -96,7 +96,7 @@ dashboards:
 # change screen.  Any pending comments or review messages will be
 # attached to the review; otherwise an empty review will be left.  The
 # approvals list is exhaustive, so if you specify an empty list,
-# Gertty will submit a review that clears any previous approvals.
+# Mqtty will submit a review that clears any previous approvals.
 # They will appear in the help text for the change screen.
 reviewkeys:
   - key: 'meta 0'
