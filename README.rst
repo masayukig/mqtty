@@ -4,7 +4,9 @@ Mqtty
 .. image:: https://circleci.com/gh/masayukig/mqtty.svg?style=shield
     :target: https://circleci.com/gh/masayukig/mqtty
 
-Mqtty is a console-based interface client for MQTT protocol.
+Mqtty is a console-based interface client for MQTT protocol. This was
+inspired by `gertty <https://git.openstack.org/cgit/openstack/gertty/>`_
+and many code came from it.
 
 .. caution::
    This is still under heavily development phase.
