@@ -36,3 +36,9 @@ So, you can use it like this::
 
   $ cp ./examples/mqtty.yaml ~/.mqtty.yaml
   $ vim ~/.mqtty.yaml
+
+Development
+-----------
+
+* Need to pass CircleCI and SideCI service check
+
