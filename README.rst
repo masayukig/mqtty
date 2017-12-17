@@ -40,5 +40,5 @@ So, you can use it like this::
 Development
 -----------
 
-* Need to pass CircleCI and SideCI service check
+* Need to pass CircleCI service check
 
